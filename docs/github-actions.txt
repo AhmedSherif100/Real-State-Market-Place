@@ -1,21 +1,16 @@
+----------------------------------------
 Connection:
 git clone https://github.com/AhmedSherif100/Real-State-Market-Place.git --> To connect to online github repo
 git remote -v --> To check connection to online github repo
 
-
+----------------------------------------
 Branching:
-
 git checkout -b feature/your-feature-name --> Will create a new branch
-
 git add . --> Add files to "Staging" area
-
 git commit -m "Meaningful commit message. Ex: Added Prettier configuration and Tailwind setup" --> Commit changes with a meaningful message
-
 git push origin feature/your-feature-name --> Push branch to github
 
-
+----------------------------------------
 Before working on anything:
-
-git fetch origin --> Use pull instead
- 
+git fetch origin --> 
 git pull origin main --> This will make sure you are working on the latest code. Read error message to check if there are conflicts.
