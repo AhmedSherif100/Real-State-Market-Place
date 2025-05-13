@@ -7,6 +7,8 @@ const cors = require('cors');
 
 // Internal Modules
 const globalErrorHandler = require('./controllers/errorController');
+const AppError = require('./utils/appError');
+const authRouter = require('./routes/authRoutes');
 
 // Start Express app
 const app = express();
@@ -29,6 +31,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 // Routes
+
+app.use('/api/auth/', authRouter);
 app.all('*', (req, res, next) => {
   next(new AppError(`Couldn't find ${req.originalUrl} on this server!`, 404));
 });
