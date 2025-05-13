@@ -14,6 +14,8 @@ git commit -m "Meaningful commit message. Ex: Added Prettier configuration and T
 git push origin feature/your-feature-name --> Push branch to github
 
 
+Before working on anything:
 
-
-It worked!!!!!
+git fetch origin --> Use pull instead
+ 
+git pull origin main --> This will make sure you are working on the latest code. Read error message to check if there are conflicts.

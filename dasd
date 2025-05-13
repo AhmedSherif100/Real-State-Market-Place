@@ -1,0 +1,69 @@
+[33mcommit ac7042b190b7e34af1aad676806b1b4dff7a39a5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/prettier[m[33m, [m[1;31morigin/main[m[33m)[m
+Merge: 92adb33 5f66202
+Author: El-Darawii <ahmedd.eldarawi@gmail.com>
+Date:   Tue May 13 18:29:06 2025 +0300
+
+    Merge pull request #4 from AhmedSherif100/feature/docs2
+    
+    Feature/docs2
+
+[33mcommit 5f66202480c73deb9c9cd6498870b5982bbd9253[m[33m ([m[1;31morigin/feature/docs2[m[33m)[m
+Author: El-Darawii <ahmedd.eldarawi@gmail.com>
+Date:   Tue May 13 18:17:20 2025 +0300
+
+    test2
+
+[33mcommit c1bd092f63053a5a3b42c98310022f38c67fbc87[m
+Merge: 1cea908 92adb33
+Author: El-Darawii <ahmedd.eldarawi@gmail.com>
+Date:   Tue May 13 18:13:35 2025 +0300
+
+    Merge branch 'main' of https://github.com/AhmedSherif100/Real-State-Market-Place
+
+[33mcommit 1cea9087143b2213e31c37e2a30fbf2b6c519bef[m
+Author: El-Darawii <ahmedd.eldarawi@gmail.com>
+Date:   Tue May 13 18:04:00 2025 +0300
+
+    docs folder added
+
+[33mcommit 92adb3378caaf2581e627ff3ddd8662bf76824f7[m
+Merge: 9f19a05 05d86ee
+Author: Ahmed Ossama <ahmed.ossama15@hotmail.com>
+Date:   Tue May 13 18:03:14 2025 +0300
+
+    Merge pull request #2 from AhmedSherif100/feature/index
+    
+    Testing commit to index.html
+
+[33mcommit 05d86ee0d633e1a5a51afd363ee7d64830ec854e[m[33m ([m[1;31morigin/feature/index[m[33m)[m
+Author: AhmedObama <ahmed.ossama15@hotmail.com>
+Date:   Tue May 13 18:01:28 2025 +0300
+
+    Testing commit to index.html
+
+[33mcommit 9f19a0562b6d0275397cd28e6079d2f60209dbf5[m
+Merge: ae708f6 24d6b9a
+Author: ahmedelabd <111066111+AhmedSherif100@users.noreply.github.com>
+Date:   Tue May 13 17:29:04 2025 +0300
+
+    Merge pull request #1 from AhmedSherif100/feature/prettier
+    
+    Add Prettier configuration and Tailwind setup
+
+[33mcommit 24d6b9adcd9e980ee21e13a07e9ed0c6af8c91a6[m[33m ([m[1;31morigin/feature/prettier[m[33m)[m
+Author: AhmedSherif100 <ahmedsheriff122@gmail.com>
+Date:   Tue May 13 17:12:47 2025 +0300
+
+    Add Prettier configuration and Tailwind setup
+
+[33mcommit ae708f6491831a278134bf30f26b166c6908c94e[m[33m ([m[1;32mmain[m[33m)[m
+Author: AhmedSherif100 <ahmedsheriff122@gmail.com>
+Date:   Tue May 13 16:58:03 2025 +0300
+
+    Created project folder structure
+
+[33mcommit fe69f02a16b0a95bbf9c1e6bc11ef43a6df17a01[m
+Author: AhmedSherif100 <ahmedsheriff122@gmail.com>
+Date:   Wed Apr 16 22:02:08 2025 +0200
+
+    first commit
