@@ -1,0 +1,22 @@
+# Node.js
+node_modules/
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+*.env
+config.env
+
+# Build output
+dist/
+build/
+
+# OS files
+.DS_Store
+
+# IDEs and editors
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
