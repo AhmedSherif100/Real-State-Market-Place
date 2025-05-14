@@ -25,8 +25,8 @@ const Home = () => {
         <div className="absolute top-16 right-6 bg-gray-800 rounded-lg shadow-md p-4 w-48 z-10">
           <p className="font-semibold">User Profile</p>
           <hr className="my-2 border-gray-600" />
-          <p>Name: Jane Doe</p>
-          <p>Email: jane@example.com</p>
+          <p>Name: TillBackend</p>
+          <p>Email: tillbackend</p>
         </div>
       )}
 
