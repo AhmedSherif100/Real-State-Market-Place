@@ -4,11 +4,13 @@ const path = require('path');
 // 3rd Party Modules
 const express = require('express');
 const cors = require('cors');
+const morgan = require('morgan');
 
 // Internal Modules
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 const authRouter = require('./routes/authRoutes');
+const propertyRouter = require('./routes/propertyRouter');
 
 // Start Express app
 const app = express();
@@ -29,9 +31,10 @@ app.use(
 );
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+if (process.env.NODE_ENV == 'development') app.use(morgan('dev'));
 
 // Routes
-
+app.use('/api/properties/', propertyRouter);
 app.use('/api/auth/', authRouter);
 app.all('*', (req, res, next) => {
   next(new AppError(`Couldn't find ${req.originalUrl} on this server!`, 404));
