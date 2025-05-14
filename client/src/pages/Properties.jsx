@@ -1,15 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import PropertyCard from '../components/PropertyCard';
 import Navbar from '../components/Navbar';
-import { FiSearch } from 'react-icons/fi';
 import SearchBar from '../components/SearchBar';
 
 function Properties() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useState({
+    search: '',
+    sortBy: 'price',
+    sortOrder: 'asc',
+    minPrice: '',
+    maxPrice: '',
+    bedrooms: '',
+    listingType: '',
+    propertyType: '',
+  });
 
-  useEffect(() => {
-    fetch('http://localhost:8000/api/properties')
+  const fetchProperties = () => {
+    const query = new URLSearchParams();
+    if (searchParams.search) query.append('search', searchParams.search);
+    if (searchParams.sortBy) query.append('sort', searchParams.sortBy);
+    if (searchParams.sortOrder) query.append('order', searchParams.sortOrder);
+    if (searchParams.minPrice) query.append('minPrice', searchParams.minPrice);
+    if (searchParams.maxPrice) query.append('maxPrice', searchParams.maxPrice);
+    if (searchParams.bedrooms) query.append('bedrooms', searchParams.bedrooms);
+    if (searchParams.listingType)
+      query.append('listingType', searchParams.listingType);
+    if (searchParams.propertyType)
+      query.append('propertyType', searchParams.propertyType);
+
+    fetch(`http://localhost:8000/api/properties?${query.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         setProperties(data.data.properties);
@@ -19,17 +40,19 @@ function Properties() {
         console.error('Error fetching properties:', err);
         setLoading(false);
       });
-  }, []);
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchProperties();
+  }, [searchParams]);
 
   if (loading) {
     return (
       <div className="bg-[#121212] text-[#fff] min-h-screen">
         <Navbar />
-
-        {/* Loading Skeleton */}
         <div className="px-6 md:px-16 py-20">
           <div className="animate-pulse">
-            {/* Hero Section Skeleton */}
             <div className="mb-16">
               <div className="h-12 bg-[#1a1a1a] rounded w-1/2 mb-6"></div>
               <div className="h-6 bg-[#1a1a1a] rounded w-3/4 mb-8"></div>
@@ -38,8 +61,6 @@ function Properties() {
                 <div className="h-12 bg-[#703BF7] rounded-r-full w-32"></div>
               </div>
             </div>
-
-            {/* Properties Grid Skeleton */}
             <h2 className="h-10 bg-[#1a1a1a] rounded w-1/3 mx-auto mb-10"></h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
@@ -60,8 +81,6 @@ function Properties() {
   return (
     <div className="bg-[#121212] text-[#fff] min-h-screen">
       <Navbar />
-
-      {/* Hero Section with Search */}
       <section
         className="relative flex flex-col items-center justify-center px-6 md:px-16 py-24 bg-[#121212] bg-cover bg-center overflow-hidden"
         style={{
@@ -77,28 +96,16 @@ function Properties() {
               Dream Home
             </span>
           </h1>
-
-          <div className="flex items-center justify-center mt-6">
-            <div className="relative w-full max-w-lg">
-              <input
-                type="text"
-                placeholder="Search by address, city, or ZIP code"
-                className="w-full px-5 py-4 pl-14 pr-4 rounded-full text-black bg-white/90 backdrop-blur-sm outline-none border-none focus:ring-2 focus:ring-[#703BF7] transition-all duration-300 hover:shadow-lg hover:shadow-[#703BF Cornish]/30"
-              />
-              <FiSearch className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-600 text-2xl" />
-            </div>
-            <button className="ml-2 bg-gradient-to-r from-[#703BF7] to-[#5f2cc6] px-8 py-4 rounded-full font-semibold text-white hover:from-[#5f2cc6] hover:to-[#703BF7] transition-all duration-300 transform hover:scale-105">
-              Search
-            </button>
-          </div>
+          <SearchBar
+            searchParams={searchParams}
+            setSearchParams={setSearchParams}
+          />
         </div>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute w-96 h-96 bg-[#703BF7]/20 rounded-full blur-3xl top-10 left-10 animate-pulse"></div>
           <div className="absolute w-96 h-96 bg-[#fff]/10 rounded-full blur-3xl bottom-10 right-10 animate-pulse"></div>
         </div>
       </section>
-
-      {/* Featured Properties */}
       <section className="px-6 md:px-16 py-20">
         <h2 className="text-3xl font-bold text-center mb-10">
           Featured Properties
@@ -109,8 +116,6 @@ function Properties() {
           ))}
         </div>
       </section>
-
-      {/* Footer */}
       <footer className="bg-[#1a1a1a] py-6 text-center text-gray-400">
         <p>© 2025 Tamalk. All Rights Reserved.</p>
       </footer>

@@ -71,3 +71,20 @@ exports.getPropertyById = catchAsync(async (req, res) => {
     },
   });
 });
+
+//this is not for use, for development to batch clean test/corrupted entries!!!!!!!!!
+// exports.NUKE = catchAsync(async (req, res) => {
+//   const deletedProperty = await propertyModel.deleteMany();
+
+//   if (!deletedProperty) {
+//     return res.status(404).json({
+//       status: 'fail',
+//       message: `No property found with ID: ${id}`,
+//     });
+//   }
+
+//   res.status(200).json({
+//     status: 'success',
+//     data: null,
+//   });
+// });
