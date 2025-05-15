@@ -5,47 +5,95 @@ import SearchBar from '../components/SearchBar';
 
 function Properties() {
   const [properties, setProperties] = useState([]);
+  const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchParams, setSearchParams] = useState({
-    search: '',
-    sortBy: 'price',
-    sortOrder: 'asc',
-    minPrice: '',
-    maxPrice: '',
-    bedrooms: '',
-    listingType: '',
-    propertyType: '',
-  });
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchProperties = () => {
-    const query = new URLSearchParams();
-    if (searchParams.search) query.append('search', searchParams.search);
-    if (searchParams.sortBy) query.append('sort', searchParams.sortBy);
-    if (searchParams.sortOrder) query.append('order', searchParams.sortOrder);
-    if (searchParams.minPrice) query.append('minPrice', searchParams.minPrice);
-    if (searchParams.maxPrice) query.append('maxPrice', searchParams.maxPrice);
-    if (searchParams.bedrooms) query.append('bedrooms', searchParams.bedrooms);
-    if (searchParams.listingType)
-      query.append('listingType', searchParams.listingType);
-    if (searchParams.propertyType)
-      query.append('propertyType', searchParams.propertyType);
-
-    fetch(`http://localhost:8000/api/properties?${query.toString()}`)
-      .then((res) => res.json())
+  useEffect(() => {
+    fetch('http://localhost:8000/api/properties')
+      .then((res) => {
+        return res.json();
+      })
       .then((data) => {
-        setProperties(data.data.properties);
+        if (data?.data?.properties) {
+          setProperties(data.data.properties);
+          setFilteredProperties(data.data.properties);
+        } else {
+          console.warn('No properties found in API response');
+          setProperties([]);
+          setFilteredProperties([]);
+        }
         setLoading(false);
       })
       .catch((err) => {
         console.error('Error fetching properties:', err);
         setLoading(false);
       });
-  };
+  }, []);
 
   useEffect(() => {
-    setLoading(true);
-    fetchProperties();
-  }, [searchParams]);
+    if (searchTerm.trim() === '') {
+      setFilteredProperties(properties);
+      return;
+    }
+
+    const lowerSearch = searchTerm.toLowerCase();
+    const filtered = properties.filter((property) => {
+      try {
+        const mainFields = [
+          property.title || '',
+          property.description || '',
+          property.listingType || '',
+          property.propertyType || '',
+          property.subType || '',
+          property.address
+            ? `${property.address.street || ''} ${
+                property.address.city || ''
+              } ${property.address.state || ''} ${
+                property.address.country || ''
+              }`
+            : '',
+          property.area?.sqft?.toString() || '',
+          property.area?.sqm?.toString() || '',
+          property.price?.toString() || '',
+          property.buildDate?.toString() || '',
+          property.status || '',
+        ];
+
+        const featureFields = property.features
+          ? [
+              property.features.bedrooms?.toString() || '',
+              property.features.bathrooms?.toString() || '',
+              property.features.garage?.toString() || '',
+              property.features.pool?.toString() || '',
+              property.features.yard?.toString() || '',
+              property.features.pets?.toString() || '',
+              property.features.furnished || '',
+              property.features.airConditioning?.toString() || '',
+              property.features.internet?.toString() || '',
+              property.features.electricity?.toString() || '',
+              property.features.water?.toString() || '',
+              property.features.gas?.toString() || '',
+              property.features.wifi?.toString() || '',
+              property.features.security?.toString() || '',
+            ]
+          : [];
+
+        return [...mainFields, ...featureFields].some((field) =>
+          field.toLowerCase().includes(lowerSearch)
+        );
+      } catch (err) {
+        console.error('Error filtering property:', property, err);
+        return false;
+      }
+    });
+
+    setFilteredProperties(filtered);
+  }, [searchTerm, properties]);
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
 
   if (loading) {
     return (
@@ -96,10 +144,12 @@ function Properties() {
               Dream Home
             </span>
           </h1>
-          <SearchBar
-            searchParams={searchParams}
-            setSearchParams={setSearchParams}
-          />
+          <div className="flex items-center justify-center mt-6">
+            <SearchBar onSearch={handleSearch} />
+            <button className="ml-2 bg-gradient-to-r from-[#703BF7] to-[#5f2cc6] px-8 py-4 rounded-full font-semibold text-white hover:from-[#5f2cc6] hover:to-[#703BF7] transition-all duration-300 transform hover:scale-105">
+              Search
+            </button>
+          </div>
         </div>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute w-96 h-96 bg-[#703BF7]/20 rounded-full blur-3xl top-10 left-10 animate-pulse"></div>
@@ -108,13 +158,19 @@ function Properties() {
       </section>
       <section className="px-6 md:px-16 py-20">
         <h2 className="text-3xl font-bold text-center mb-10">
-          Featured Properties
+          Browse Properties
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {properties.map((property) => (
-            <PropertyCard key={property._id} property={property} />
-          ))}
-        </div>
+        {filteredProperties.length === 0 ? (
+          <p className="text-center text-gray-400">
+            No properties found. Try adjusting your search.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {filteredProperties.map((property) => (
+              <PropertyCard key={property._id} property={property} />
+            ))}
+          </div>
+        )}
       </section>
       <footer className="bg-[#1a1a1a] py-6 text-center text-gray-400">
         <p>© 2025 Tamalk. All Rights Reserved.</p>
