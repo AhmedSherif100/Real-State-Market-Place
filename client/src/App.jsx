@@ -9,6 +9,9 @@ import ManageUsers from './pages/ManageUsers';
 import ThemeToggle from './components/ThemeToggle';
 import Youssef from './pages/Youssef';
 import Properties from './pages/Properties';
+import Rent from './pages/Rent';
+import Buy from './pages/Buy';
+import Sell from './pages/Sell';
 const App = () => {
   return (
     <div className="relative min-h-screen bg-base-100 transition-colors duration-300">
@@ -22,7 +25,9 @@ const App = () => {
         <Route path="/manage-users" element={<ManageUsers />} />
         <Route path="/ThemeToggle" element={<ThemeToggle />} />
         <Route path="/youssef" element={<Youssef />} />
-        <Route path="/properties" element={<Properties />} />
+        <Route path="/rent" element={<Rent />} />
+        <Route path="/buy" element={<Buy />} />
+        <Route path="/sell" element={<Sell />} />
       </Routes>
     </div>
   );
