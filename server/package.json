@@ -11,15 +11,18 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "algoliasearch": "^5.25.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "fetch": "^1.1.0",
     "html-to-text": "^9.0.5",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.0",
     "morgan": "^1.10.0",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.3",
     "pug": "^3.0.3",
     "validator": "^13.15.0"
