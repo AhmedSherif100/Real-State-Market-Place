@@ -66,7 +66,7 @@ export default function Register() {
 
       if (response.status === 200 || response.status === 201) {
         if (isLogin) {
-          navigate('/dashboard');
+          navigate('/dashboard'); //
         } else {
           setIsLogin(true);
           setMessage('Registration successful. Please log in.');

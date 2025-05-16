@@ -14,7 +14,7 @@ const App = () => {
   return (
     <div className="relative min-h-screen bg-base-100 transition-colors duration-300">
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />} /> // same as /
         <Route path="/home" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
