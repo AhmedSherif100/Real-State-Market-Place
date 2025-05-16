@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FiSearch } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import FeaturedProperties from '../components/FeaturedProperties';
+
 const HomePage = () => {
   const customerSuccessData = [
     { label: 'Properties Sold', value: '200+' },
