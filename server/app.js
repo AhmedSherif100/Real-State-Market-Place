@@ -5,6 +5,7 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const fs = require('fs');
 
 // Internal Modules
 const globalErrorHandler = require('./controllers/errorController');
@@ -30,9 +31,12 @@ if (process.env.NODE_ENV == 'development') app.use(morgan('dev'));
 // Routes
 app.use('/api/properties/', propertyRouter);
 app.use('/api/auth/', authRouter);
+
+// Catch-all for 404
 app.all('*', (req, res, next) => {
   next(new AppError(`Couldn't find ${req.originalUrl} on this server!`, 404));
 });
+
 app.use(globalErrorHandler);
 
 // Export app to server

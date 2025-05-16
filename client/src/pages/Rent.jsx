@@ -3,23 +3,36 @@ import PropertyCard from '../components/PropertyCard';
 import Navbar from '../components/Navbar';
 import SearchBar from '../components/SearchBar';
 
-function Properties() {
+function Rent() {
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/api/properties')
       .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
         return res.json();
       })
       .then((data) => {
-        if (data?.data?.properties) {
-          setProperties(data.data.properties);
-          setFilteredProperties(data.data.properties);
+        console.log('API Response:', data); // Debug: Log the full API response
+        if (data?.data?.properties && Array.isArray(data.data.properties)) {
+          // Filter only properties with listingType 'rent'
+          const rentProperties = data.data.properties.filter(
+            (property) => property.listingType === 'rent'
+          );
+          console.log('Rent Properties:', rentProperties); // Debug: Log filtered properties
+          setProperties(rentProperties);
+          setFilteredProperties(rentProperties);
+          if (rentProperties.length === 0) {
+            console.warn('No properties with listingType "rent" found.');
+          }
         } else {
-          console.warn('No properties found in API response');
+          console.warn('Invalid or empty properties in API response');
           setProperties([]);
           setFilteredProperties([]);
         }
@@ -27,6 +40,7 @@ function Properties() {
       })
       .catch((err) => {
         console.error('Error fetching properties:', err);
+        setError('Failed to load properties. Please try again later.');
         setLoading(false);
       });
   }, []);
@@ -43,7 +57,6 @@ function Properties() {
         const mainFields = [
           property.title || '',
           property.description || '',
-          property.listingType || '',
           property.propertyType || '',
           property.subType || '',
           property.address
@@ -89,6 +102,7 @@ function Properties() {
     });
 
     setFilteredProperties(filtered);
+    console.log('Filtered Properties:', filtered); // Debug: Log search results
   }, [searchTerm, properties]);
 
   const handleSearch = (term) => {
@@ -126,6 +140,17 @@ function Properties() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="bg-[#121212] text-[#fff] min-h-screen">
+        <Navbar />
+        <div className="px-6 md:px-16 py-20 text-center">
+          <p className="text-red-400">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#121212] text-[#fff] min-h-screen">
       <Navbar />
@@ -139,9 +164,9 @@ function Properties() {
         <div className="absolute inset-0 bg-gradient-to-r from-[#121212] via-[#703BF7] to-[#121212] opacity-70"></div>
         <div className="relative max-w-3xl space-y-8 z-10 text-center">
           <h1 className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight">
-            Discover Your{' '}
+            Find Your Perfect{' '}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff]">
-              Dream Home
+              Rental Home
             </span>
           </h1>
           <div className="flex items-center justify-center mt-6">
@@ -158,11 +183,15 @@ function Properties() {
       </section>
       <section className="px-6 md:px-16 py-20">
         <h2 className="text-3xl font-bold text-center mb-10">
-          Browse Properties
+          Browse Properties for Rent
         </h2>
-        {filteredProperties.length === 0 ? (
+        {properties.length === 0 ? (
           <p className="text-center text-gray-400">
-            No properties found. Try adjusting your search.
+            No properties for rent are currently available.
+          </p>
+        ) : filteredProperties.length === 0 ? (
+          <p className="text-center text-gray-400">
+            No properties match your search. Try adjusting your search terms.
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -179,4 +208,4 @@ function Properties() {
   );
 }
 
-export default Properties;
+export default Rent;
