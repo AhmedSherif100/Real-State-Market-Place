@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import PropertyCard from '../components/PropertyCard';
 import Navbar from '../components/Navbar';
 import SearchBar from '../components/SearchBar';
+import { Routes, Route } from 'react-router-dom';
+import PropertyDetailPage from '../pages/PropertyDetail';
 
 function Rent() {
   const [properties, setProperties] = useState([]);
@@ -19,13 +21,12 @@ function Rent() {
         return res.json();
       })
       .then((data) => {
-        console.log('API Response:', data); // Debug: Log the full API response
+        console.log('API Response:', data);
         if (data?.data?.properties && Array.isArray(data.data.properties)) {
-          // Filter only properties with listingType 'rent'
           const rentProperties = data.data.properties.filter(
             (property) => property.listingType === 'rent'
           );
-          console.log('Rent Properties:', rentProperties); // Debug: Log filtered properties
+          console.log('Rent Properties:', rentProperties);
           setProperties(rentProperties);
           setFilteredProperties(rentProperties);
           if (rentProperties.length === 0) {
@@ -102,7 +103,7 @@ function Rent() {
     });
 
     setFilteredProperties(filtered);
-    console.log('Filtered Properties:', filtered); // Debug: Log search results
+    console.log('Filtered Properties:', filtered);
   }, [searchTerm, properties]);
 
   const handleSearch = (term) => {
@@ -157,7 +158,8 @@ function Rent() {
       <section
         className="relative flex flex-col items-center justify-center px-6 md:px-16 py-24 bg-[#121212] bg-cover bg-center overflow-hidden"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c')`,
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c')",
           backgroundAttachment: 'fixed',
         }}
       >

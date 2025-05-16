@@ -1,8 +1,10 @@
 import React from 'react';
 import { FaBed, FaBath, FaRulerCombined, FaMapMarkerAlt } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const PropertyCard = ({ property }) => {
   const {
+    _id,
     title,
     price,
     listingType,
@@ -41,9 +43,12 @@ const PropertyCard = ({ property }) => {
             <FaRulerCombined /> {area.sqft} sqft
           </div>
         </div>
-        <button className="mt-4 w-full bg-[#703BF7] hover:bg-[#5f2cc6] text-white py-2 rounded-lg transition-colors">
+        <Link
+          to={`/property/${_id}`}
+          className="mt-4 block w-full bg-[#703BF7] hover:bg-[#5f2cc6] text-white py-2 text-center rounded-lg transition-colors"
+        >
           View Details
-        </button>
+        </Link>
       </div>
     </div>
   );
