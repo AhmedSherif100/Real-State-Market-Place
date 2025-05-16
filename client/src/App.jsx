@@ -12,10 +12,17 @@ import Properties from './pages/Properties';
 import Rent from './pages/Rent';
 import Buy from './pages/Buy';
 import Sell from './pages/Sell';
+
+
+import PropertyDetail from './pages/PropertyDetail';
 import Agnet from './pages/Agent';
 import BecomeAgent from './pages/BecomeAgent';
 import Agent from './pages/Agent';
 import CreateAgent from './pages/CreateAgent';
+
+
+
+
 
 const App = () => {
   return (
@@ -33,9 +40,13 @@ const App = () => {
         <Route path="/rent" element={<Rent />} />
         <Route path="/buy" element={<Buy />} />
         <Route path="/sell" element={<Sell />} />
+
         <Route path="/agent" element={<Agent/>} />
         <Route path="/bagent" element={<BecomeAgent />} />
         <Route path="/create-agent" element={<CreateAgent />} />
+
+        <Route path="/property/:id" element={<PropertyDetail />} />
+
       </Routes>
     </div>
   );

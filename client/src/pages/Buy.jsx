@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropertyCard from '../components/PropertyCard';
 import Navbar from '../components/Navbar';
 import SearchBar from '../components/SearchBar';
+import PropertyDetail from './PropertyDetail';
 
 function Buy() {
   const [properties, setProperties] = useState([]);
@@ -9,6 +10,7 @@ function Buy() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
+  const [selectedProperty, setSelectedProperty] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/api/properties')
@@ -19,12 +21,12 @@ function Buy() {
         return res.json();
       })
       .then((data) => {
-        console.log('API Response:', data); // Debug: Log full response
+        console.log('API Response:', data);
         if (data?.data?.properties && Array.isArray(data.data.properties)) {
           const saleProperties = data.data.properties.filter(
             (property) => property.listingType === 'sale'
           );
-          console.log('Sale Properties:', saleProperties); // Debug: Log filtered properties
+          console.log('Sale Properties:', saleProperties);
           setProperties(saleProperties);
           setFilteredProperties(saleProperties);
           if (saleProperties.length === 0) {
@@ -101,7 +103,7 @@ function Buy() {
     });
 
     setFilteredProperties(filtered);
-    console.log('Filtered Properties:', filtered); // Debug: Log search results
+    console.log('Filtered Properties:', filtered);
   }, [searchTerm, properties]);
 
   const handleSearch = (term) => {
@@ -195,11 +197,28 @@ function Buy() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {filteredProperties.map((property) => (
-              <PropertyCard key={property._id} property={property} />
+              <PropertyCard
+                key={property._id}
+                property={property}
+                onViewDetails={setSelectedProperty}
+              />
             ))}
           </div>
         )}
       </section>
+      {selectedProperty && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-[#1a1a1a] p-8 rounded-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto border border-[#252525] shadow-2xl relative">
+            <button
+              className="absolute top-4 right-4 text-gray-300 hover:text-white text-3xl font-bold"
+              onClick={() => setSelectedProperty(null)}
+            >
+              ×
+            </button>
+            <PropertyDetail property={selectedProperty} />
+          </div>
+        </div>
+      )}
       <footer className="bg-[#1a1a1a] py-6 text-center text-gray-400">
         <p>© 2025 Tamalk. All Rights Reserved.</p>
       </footer>
