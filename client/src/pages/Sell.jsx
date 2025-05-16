@@ -129,14 +129,7 @@ export default function Sell() {
 
     try {
       console.log('Submitting payload:', JSON.stringify(payload, null, 2));
-      const res = await axios.post(
-        'http://127.0.0.1:8000/api/properties',
-        payload,
-        {
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-      console.log('Property created:', res.data);
+      //upload images//
       alert('Property successfully listed!');
       navigate('/buy');
     } catch (err) {
