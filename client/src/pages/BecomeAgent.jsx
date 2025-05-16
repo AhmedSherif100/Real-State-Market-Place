@@ -15,7 +15,7 @@ const formVariants = {
 
 export default function BecomeAgent() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1); // 1 for credentials, 2 for agent info
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -212,7 +212,7 @@ export default function BecomeAgent() {
 
           <div className="text-center text-sm text-gray-400">
             <button
-              onClick={() => navigate('/agents')}
+              onClick={() => navigate('/agent')}
               className="underline text-purple-400 hover:text-purple-300 transition"
             >
               Back to Agents

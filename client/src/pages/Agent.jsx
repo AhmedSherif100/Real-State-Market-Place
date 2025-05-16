@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiSearch, FiMapPin, FiStar, FiCalendar } from 'react-icons/fi';
+import { FiSearch, FiMapPin, FiStar, FiCalendar, FiMail, FiPhone, FiUser } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
 
@@ -8,10 +8,9 @@ const Agent = () => {
   const [filteredAgents, setFilteredAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [location, setLocation] = useState('');
   const [filters, setFilters] = useState({
-    minRating: '',
     minExperience: '',
+    minSales: '',
   });
 
   useEffect(() => {
@@ -20,13 +19,7 @@ const Agent = () => {
 
   const fetchAgents = async () => {
     try {
-      const queryParams = new URLSearchParams();
-      if (searchTerm) queryParams.append('search', searchTerm);
-      if (location) queryParams.append('city', location);
-      if (filters.minRating) queryParams.append('minRating', filters.minRating);
-      if (filters.minExperience) queryParams.append('minExperience', filters.minExperience);
-
-      const response = await axios.get(`http://localhost:8000/api/agents?${queryParams.toString()}`);
+      const response = await axios.get('http://localhost:8000/api/agents');
       const agentsData = response.data.data.agents;
       setAgents(agentsData);
       setFilteredAgents(agentsData);
@@ -39,37 +32,33 @@ const Agent = () => {
 
   // Client-side filtering
   useEffect(() => {
-    if (searchTerm.trim() === '' && location.trim() === '' && !filters.minRating && !filters.minExperience) {
+    if (searchTerm.trim() === '' && !filters.minExperience && !filters.minSales) {
       setFilteredAgents(agents);
       return;
     }
 
     const lowerSearch = searchTerm.toLowerCase();
-    const lowerLocation = location.toLowerCase();
 
     const filtered = agents.filter((agent) => {
       try {
         const searchFields = [
           `${agent.firstName} ${agent.lastName}`,
-          agent.role || '',
-          agent.bio || '',
-          agent.languagesSpoken?.join(' ') || '',
+          agent.email,
+          agent.contactEmail,
+          agent.about || '',
         ];
 
         const matchesSearch = searchTerm === '' || searchFields.some(field => 
           field.toLowerCase().includes(lowerSearch)
         );
 
-        const matchesLocation = location === '' || 
-          (agent.location && agent.location.toLowerCase().includes(lowerLocation));
-
-        const matchesRating = !filters.minRating || 
-          (agent.rating && agent.rating >= parseInt(filters.minRating));
-
         const matchesExperience = !filters.minExperience || 
-          (agent.yearsOfExperience && agent.yearsOfExperience >= parseInt(filters.minExperience));
+          (agent.yearsOfExperience >= parseInt(filters.minExperience));
 
-        return matchesSearch && matchesLocation && matchesRating && matchesExperience;
+        const matchesSales = !filters.minSales || 
+          (agent.totalSales >= parseInt(filters.minSales));
+
+        return matchesSearch && matchesExperience && matchesSales;
       } catch (err) {
         console.error('Error filtering agent:', agent, err);
         return false;
@@ -77,7 +66,7 @@ const Agent = () => {
     });
 
     setFilteredAgents(filtered);
-  }, [searchTerm, location, filters, agents]);
+  }, [searchTerm, filters, agents]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -116,7 +105,7 @@ const Agent = () => {
               Find a <span className="text-[#703BF7]">Real Estate Agent</span>
             </h1>
             <p className="text-gray-400 text-lg">
-              Connect with top-rated agents in your area
+              Connect with experienced agents in your area
             </p>
           </div>
 
@@ -125,40 +114,14 @@ const Agent = () => {
             <form onSubmit={handleSearch} className="bg-[#1a1a1a] p-6 rounded-xl shadow-lg">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="relative">
-                  <FiMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Enter city, neighborhood, or ZIP"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-[#252525] text-white rounded-lg focus:ring-2 focus:ring-[#703BF7] outline-none"
-                  />
-                </div>
-                <div className="relative">
                   <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search by agent name"
+                    placeholder="Search by name, email, or keywords"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-[#252525] text-white rounded-lg focus:ring-2 focus:ring-[#703BF7] outline-none"
                   />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative">
-                  <FiStar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <select
-                    name="minRating"
-                    value={filters.minRating}
-                    onChange={handleFilterChange}
-                    className="w-full pl-10 pr-4 py-3 bg-[#252525] text-white rounded-lg focus:ring-2 focus:ring-[#703BF7] outline-none"
-                  >
-                    <option value="">Minimum Rating</option>
-                    <option value="4">4+ Stars</option>
-                    <option value="3">3+ Stars</option>
-                    <option value="2">2+ Stars</option>
-                  </select>
                 </div>
                 <div className="relative">
                   <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -172,6 +135,22 @@ const Agent = () => {
                     <option value="5">5+ Years</option>
                     <option value="3">3+ Years</option>
                     <option value="1">1+ Year</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <FiStar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <select
+                    name="minSales"
+                    value={filters.minSales}
+                    onChange={handleFilterChange}
+                    className="w-full pl-10 pr-4 py-3 bg-[#252525] text-white rounded-lg focus:ring-2 focus:ring-[#703BF7] outline-none"
+                  >
+                    <option value="">Minimum Sales</option>
+                    <option value="10">10+ Sales</option>
+                    <option value="5">5+ Sales</option>
+                    <option value="1">1+ Sale</option>
                   </select>
                 </div>
               </div>
@@ -198,41 +177,53 @@ const Agent = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredAgents.map((agent) => (
-                <div key={agent._id} className="bg-[#1a1a1a] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <img
-                        src={agent.profilePicture || 'https://via.placeholder.com/100'}
-                        alt={`${agent.firstName} ${agent.lastName}`}
-                        className="w-24 h-24 rounded-full object-cover border-2 border-[#703BF7]"
-                      />
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold">{agent.firstName} {agent.lastName}</h3>
-                        <p className="text-[#703BF7] font-medium">{agent.role}</p>
-                        <div className="flex items-center mt-2">
-                          <div className="text-yellow-400 flex">
-                            {'★'.repeat(Math.floor(agent.rating || 0))}
-                          </div>
-                          <span className="ml-2 text-gray-400">({agent.reviewCount || 0} reviews)</span>
-                        </div>
-                      </div>
+                <div key={agent._id} className="bg-[#1a1a1a] rounded-xl p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-16 h-16 bg-[#703BF7] rounded-full flex items-center justify-center">
+                      <FiUser className="w-8 h-8 text-white" />
                     </div>
+                    <div>
+                      <h3 className="text-xl font-semibold">
+                        {agent.firstName} {agent.lastName}
+                      </h3>
+                      <p className="text-gray-400">{agent.yearsOfExperience} years of experience</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center text-gray-400">
+                      <FiMail className="w-5 h-5 mr-2" />
+                      <span>{agent.email}</span>
+                    </div>
+                    {agent.contactEmail && (
+                      <div className="flex items-center text-gray-400">
+                        <FiMail className="w-5 h-5 mr-2" />
+                        <span>{agent.contactEmail}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center text-gray-400">
+                      <FiPhone className="w-5 h-5 mr-2" />
+                      <span>{agent.phoneNumber}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-700">
+                    <div className="flex justify-between text-sm text-gray-400">
+                      <span>Total Sales: {agent.totalSales}</span>
+                      <span>Age: {agent.age}</span>
+                    </div>
+                  </div>
+
+                  {agent.about && (
                     <div className="mt-4">
-                      <p className="text-gray-400 line-clamp-2">{agent.bio}</p>
+                      <p className="text-gray-400 text-sm line-clamp-3">{agent.about}</p>
                     </div>
-                    <div className="mt-6 flex items-center justify-between">
-                      <div className="text-sm text-gray-400">
-                        <span className="block">Experience</span>
-                        <span className="font-semibold text-white">{agent.yearsOfExperience || 0} years</span>
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        <span className="block">Languages</span>
-                        <span className="font-semibold text-white">{agent.languagesSpoken?.join(', ') || 'English'}</span>
-                      </div>
-                      <button className="bg-[#703BF7] px-6 py-2 rounded-lg hover:bg-[#5f2cc6] transition-colors">
-                        Contact
-                      </button>
-                    </div>
+                  )}
+
+                  <div className="mt-6">
+                    <button className="w-full bg-[#703BF7] text-white py-2 rounded-lg hover:bg-[#5f2cc6] transition-colors">
+                      Contact Agent
+                    </button>
                   </div>
                 </div>
               ))}
