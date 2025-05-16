@@ -52,8 +52,7 @@ const Register = () => {
         response = await axios.post("http://localhost:8000/api/auth/login", formData);
       } else {
         // Direct API call for registration
-       axios.post('http://localhost:8000/api/auth/register', formData, { withCredentials: true });
- 
+        response = await axios.post('http://localhost:8000/api/auth/register', formData, { withCredentials: true });
       }
 
       if (response.status === 200 || response.status === 201) {

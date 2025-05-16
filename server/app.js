@@ -17,20 +17,12 @@ const app = express();
 
 // Middlewares
 const allowedOrigins = [process.env.FRONTEND_URL || 'http://localhost:5173'];
-app.use(cors()); //modified for this for debugging puropses revert whenever solved
-
-// app.use(
-//   cors({
-//     origin: (origin, callback) => {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error('Not allowed by CORS'));
-//       }
-//     },
-//     credentials: true, // Allow cookies (e.g., JWT)
-//   })
-// );
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true, // Allow cookies (e.g., JWT)
+  })
+);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 if (process.env.NODE_ENV == 'development') app.use(morgan('dev'));
