@@ -20,10 +20,11 @@ const app = express();
 const allowedOrigins = [process.env.FRONTEND_URL || 'http://localhost:5173'];
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    credentials: true, // Allow cookies (e.g., JWT)
+    origin: allowedOrigins,
+    credentials: true,
   })
 );
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 if (process.env.NODE_ENV == 'development') app.use(morgan('dev'));
