@@ -18,7 +18,12 @@ const app = express();
 
 // Middlewares
 const allowedOrigins = [process.env.FRONTEND_URL || 'http://localhost:5173'];
-app.use(cors()); // Keep as is for debugging
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
