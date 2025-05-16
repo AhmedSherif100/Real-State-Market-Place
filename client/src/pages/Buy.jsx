@@ -11,6 +11,8 @@ function Buy() {
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const propertiesPerPage = 6;
 
   useEffect(() => {
     fetch('http://localhost:8000/api/properties')
@@ -21,27 +23,20 @@ function Buy() {
         return res.json();
       })
       .then((data) => {
-        console.log('API Response:', data);
         if (data?.data?.properties && Array.isArray(data.data.properties)) {
           const saleProperties = data.data.properties.filter(
             (property) => property.listingType === 'sale'
           );
-          console.log('Sale Properties:', saleProperties);
           setProperties(saleProperties);
           setFilteredProperties(saleProperties);
-          if (saleProperties.length === 0) {
-            console.warn('No properties with listingType "sale" found.');
-          }
         } else {
-          console.warn('Invalid or empty properties in API response:', data);
           setProperties([]);
           setFilteredProperties([]);
         }
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Error fetching properties:', err);
-        setError('Failed to load properties. Please try again later.');
+        setError(err);
         setLoading(false);
       });
   }, []);
@@ -51,60 +46,22 @@ function Buy() {
       setFilteredProperties(properties);
       return;
     }
-
     const lowerSearch = searchTerm.toLowerCase();
-    const filtered = properties.filter((property) => {
-      try {
-        const mainFields = [
-          property.title || '',
-          property.description || '',
-          property.propertyType || '',
-          property.subType || '',
-          property.address
-            ? `${property.address.street || ''} ${
-                property.address.city || ''
-              } ${property.address.state || ''} ${
-                property.address.country || ''
-              }`
-            : '',
-          property.area?.sqft?.toString() || '',
-          property.area?.sqm?.toString() || '',
-          property.price?.toString() || '',
-          property.buildDate?.toString() || '',
-          property.status || '',
-        ];
-
-        const featureFields = property.features
-          ? [
-              property.features.bedrooms?.toString() || '',
-              property.features.bathrooms?.toString() || '',
-              property.features.garage?.toString() || '',
-              property.features.pool?.toString() || '',
-              property.features.yard?.toString() || '',
-              property.features.pets?.toString() || '',
-              property.features.furnished || '',
-              property.features.airConditioning?.toString() || '',
-              property.features.internet?.toString() || '',
-              property.features.electricity?.toString() || '',
-              property.features.water?.toString() || '',
-              property.features.gas?.toString() || '',
-              property.features.wifi?.toString() || '',
-              property.features.security?.toString() || '',
-            ]
-          : [];
-
-        return [...mainFields, ...featureFields].some((field) =>
-          field.toLowerCase().includes(lowerSearch)
-        );
-      } catch (err) {
-        console.error('Error filtering property:', property, err);
-        return false;
-      }
-    });
-
+    const filtered = properties.filter((property) =>
+      [
+        property.title || '',
+        property.description || '',
+        property.propertyType || '',
+        property.address?.city || '',
+        property.price?.toString() || '',
+      ].some((field) => field.toLowerCase().includes(lowerSearch))
+    );
     setFilteredProperties(filtered);
-    console.log('Filtered Properties:', filtered);
   }, [searchTerm, properties]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const handleSearch = (term) => {
     setSearchTerm(term);
@@ -116,22 +73,12 @@ function Buy() {
         <Navbar />
         <div className="px-6 md:px-16 py-20">
           <div className="animate-pulse">
-            <div className="mb-16">
-              <div className="h-12 bg-[#1a1a1a] rounded w-1/2 mb-6"></div>
-              <div className="h-6 bg-[#1a1a1a] rounded w-3/4 mb-8"></div>
-              <div className="flex">
-                <div className="h-12 bg-[#1a1a1a] rounded-l-full w-full"></div>
-                <div className="h-12 bg-[#703BF7] rounded-r-full w-32"></div>
-              </div>
-            </div>
-            <h2 className="h-10 bg-[#1a1a1a] rounded w-1/3 mx-auto mb-10"></h2>
+            <div className="h-12 bg-[#1a1a1a] rounded w-1/2 mb-6 mx-auto"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="bg-[#1a1a1a] p-4 rounded-lg">
                   <div className="h-48 bg-[#252525] rounded-lg mb-4"></div>
                   <div className="h-6 bg-[#252525] rounded w-3/4 mb-2"></div>
-                  <div className="h-5 bg-[#703BF7] rounded w-1/3 mb-4"></div>
-                  <div className="h-10 bg-[#252525] rounded-lg w-full"></div>
                 </div>
               ))}
             </div>
@@ -151,6 +98,14 @@ function Buy() {
       </div>
     );
   }
+
+  const indexOfLastProperty = currentPage * propertiesPerPage;
+  const indexOfFirstProperty = indexOfLastProperty - propertiesPerPage;
+  const currentProperties = filteredProperties.slice(
+    indexOfFirstProperty,
+    indexOfLastProperty
+  );
+  const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
 
   return (
     <div className="bg-[#121212] text-[#fff] min-h-screen">
@@ -177,10 +132,6 @@ function Buy() {
             </button>
           </div>
         </div>
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute w-96 h-96 bg-[#703BF7]/20 rounded-full blur-3xl top-10 left-10 animate-pulse"></div>
-          <div className="absolute w-96 h-96 bg-[#fff]/10 rounded-full blur-3xl bottom-10 right-10 animate-pulse"></div>
-        </div>
       </section>
       <section className="px-6 md:px-16 py-20">
         <h2 className="text-3xl font-bold text-center mb-10">
@@ -192,18 +143,65 @@ function Buy() {
           </p>
         ) : filteredProperties.length === 0 ? (
           <p className="text-center text-gray-400">
-            No properties match your search. Try adjusting your search terms.
+            No properties match your search.
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredProperties.map((property) => (
-              <PropertyCard
-                key={property._id}
-                property={property}
-                onViewDetails={setSelectedProperty}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {currentProperties.map((property, index) => (
+                <div
+                  key={property._id}
+                  className="animate-fadeInScale"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <PropertyCard
+                    property={property}
+                    onViewDetails={setSelectedProperty}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center items-center mt-8 space-x-4">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="text-2xl text-white hover:text-[#703BF7] transition-colors duration-300 disabled:opacity-50"
+              >
+                ←
+              </button>
+              <div className="relative flex space-x-3">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`relative px-2 py-1 text-sm font-medium transition-colors duration-300 ${
+                        currentPage === page
+                          ? 'text-[#703BF7]'
+                          : 'text-gray-400 hover:text-[#5f2cc6]'
+                      }`}
+                      aria-label={`Go to page ${page}`}
+                      aria-current={currentPage === page ? 'page' : undefined}
+                    >
+                      {page}
+                      {currentPage === page && (
+                        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#703BF7] transform scale-x-100 transition-transform duration-300 origin-left"></span>
+                      )}
+                    </button>
+                  )
+                )}
+              </div>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="text-2xl text-white hover:text-[#703BF7] transition-colors duration-300 disabled:opacity-50"
+              >
+                →
+              </button>
+            </div>
+          </>
         )}
       </section>
       {selectedProperty && (

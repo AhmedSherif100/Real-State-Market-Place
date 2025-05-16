@@ -11,6 +11,8 @@ function Rent() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const propertiesPerPage = 6;
 
   useEffect(() => {
     fetch('http://localhost:8000/api/properties')
@@ -106,6 +108,10 @@ function Rent() {
     console.log('Filtered Properties:', filtered);
   }, [searchTerm, properties]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   const handleSearch = (term) => {
     setSearchTerm(term);
   };
@@ -152,6 +158,14 @@ function Rent() {
     );
   }
 
+  const indexOfLastProperty = currentPage * propertiesPerPage;
+  const indexOfFirstProperty = indexOfLastProperty - propertiesPerPage;
+  const currentProperties = filteredProperties.slice(
+    indexOfFirstProperty,
+    indexOfLastProperty
+  );
+  const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
+
   return (
     <div className="bg-[#121212] text-[#fff] min-h-screen">
       <Navbar />
@@ -196,11 +210,61 @@ function Rent() {
             No properties match your search. Try adjusting your search terms.
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredProperties.map((property) => (
-              <PropertyCard key={property._id} property={property} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {currentProperties.map((property, index) => (
+                <div
+                  key={property._id}
+                  className="animate-fadeInScale"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <PropertyCard property={property} />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center items-center mt-8 space-x-4">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="text-2xl text-white hover:text-[#703BF7] transition-colors duration-300 disabled:opacity-50"
+                aria-label="Previous page"
+              >
+                ←
+              </button>
+              <div className="relative flex space-x-3">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`relative px-2 py-1 text-sm font-medium transition-colors duration-300 ${
+                        currentPage === page
+                          ? 'text-[#703BF7]'
+                          : 'text-gray-400 hover:text-[#5f2cc6]'
+                      }`}
+                      aria-label={`Go to page ${page}`}
+                      aria-current={currentPage === page ? 'page' : undefined}
+                    >
+                      {page}
+                      {currentPage === page && (
+                        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#703BF7] transform scale-x-100 transition-transform duration-300 origin-left"></span>
+                      )}
+                    </button>
+                  )
+                )}
+              </div>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="text-2xl text-white hover:text-[#703BF7] transition-colors duration-300 disabled:opacity-50"
+                aria-label="Next page"
+              >
+                →
+              </button>
+            </div>
+          </>
         )}
       </section>
       <footer className="bg-[#1a1a1a] py-6 text-center text-gray-400">
