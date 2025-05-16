@@ -53,29 +53,7 @@ export default function Sell() {
     if (type === 'checkbox') {
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else if (type === 'file') {
-      const formDataToSend = new FormData();
-      Array.from(files).forEach((file) => {
-        formDataToSend.append('media', file);
-      });
-
-      try {
-        const res = await axios.post(
-          'http://127.0.0.1:8000/api/uploads',
-          formDataToSend,
-          {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          }
-        );
-        const filePaths = res.data.files.map((file) => file.path); // Expect file.path
-        setFormData((prev) => ({
-          ...prev,
-          media: [...prev.media, ...filePaths],
-        }));
-        alert('Images uploaded successfully!');
-      } catch (err) {
-        console.error('Upload error:', err.response?.data || err.message);
-        alert('Failed to upload images. Please try again.');
-      }
+      //////////////files should be handeled here ya hamada//////////////////
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
