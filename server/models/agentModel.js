@@ -1,32 +1,37 @@
 const mongoose = require('mongoose');
-const userSchema = require('./userModel');
+const { model, Schema } = mongoose;
+const bcrypt = require('bcrypt');
 
-const { Schema } = mongoose;
-
-// Agent-specific schema additions
-const agentSchema = new Schema({
-  licenseNumber: { type: String },
-  yearsOfExperience: { type: Number },
-  languagesSpoken: [{ type: String }],
-  totalSales: { type: Number },
-  minPrice: { type: Number },
-  maxPrice: { type: Number },
-  averagePrice: { type: Number },
-  about: { type: String },
-  brokerage: {
-    name: { type: String },
-    logo: { type: String },
-    website: { type: String }
+const agentSchema = new Schema(
+  {
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    contactEmail: { type: String },
+    phoneNumber: { type: String, required: true },
+    totalSales: { type: Number, default: 0 },
+    yearsOfExperience: { type: Number, required: true },
+    age: { type: Number, required: true },
+    about: { type: String },
+    user: { type: String }, // Optional user reference
+    status: { enum: ['active', 'inactive'], type: String, default: 'active' }
   },
-  ratings: {
-    averageRating: { type: Number, default: 0 },
-    totalReviews: { type: Number, default: 0 }
-  },
-  reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }],
-  activeListings: [{ type: Schema.Types.ObjectId, ref: 'Property' }],
-  website: { type: String }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-const Agent = userSchema.discriminator('Agent', agentSchema);
+// Hash password before saving
+agentSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+// Method to check password
+agentSchema.methods.isCorrectPassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+const Agent = model('Agent', agentSchema);
 
 module.exports = Agent;

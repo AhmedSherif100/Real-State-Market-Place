@@ -1,20 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const {
-  getAllAgents,
-  getAgentById,
-  createAgent,
-  updateAgent,
-  deleteAgent
-} = require('../controllers/agentController');
+const agentController = require('../controllers/agentController.js');
 
-// Public routes
-router.get('/', getAllAgents);
-router.get('/:id', getAgentById);
+// All Routes are Public
+router.get('/', agentController.getAllAgents); // GET /api/agents
+router.get('/:id', agentController.getAgentById); // GET /api/agents/:id
+router.post('/', agentController.createAgent); // POST /api/agents
+router.patch('/:id', agentController.updateAgentById); // PATCH /api/agents/:id
+router.delete('/:id', agentController.deleteAgentById); // DELETE /api/agents/:id
 
-// Admin/secured routes (optional based on your auth logic)
-router.post('/', createAgent);
-router.put('/:id', updateAgent);
-router.delete('/:id', deleteAgent);
-
-module.exports = router;
+module.exports = router; 

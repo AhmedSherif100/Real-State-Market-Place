@@ -32,50 +32,77 @@ const Navbar = () => {
             Sell
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
           </li>
-          <li className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group">
+          <li
+            onClick={() => navigate('/agent')}
+            className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+          >
             Find an Agent
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
           </li>
-          <li className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group">
+          <li
+            onClick={() => navigate('/notifications')}
+            className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+          >
             Notifications
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
           </li>
         </ul>
 
         {/* Centered Logo */}
-        <div className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff] transform hover:scale-105 transition-transform duration-300">
+        <div 
+          onClick={() => navigate('/')}
+          className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff] transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+        >
           Tamalak
         </div>
 
         {/* Right Nav Links */}
         <ul className="flex gap-6 items-center text-sm font-semibold">
           {(userRole === 'agent' || userRole === 'admin') && (
-            <li className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group">
+            <li
+              onClick={() => navigate('/manage-properties')}
+              className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+            >
               Manage Properties
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
             </li>
           )}
-          <li className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group">
+          <li
+            onClick={() => navigate('/about')}
+            className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+          >
             About Us
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
           </li>
           {!isLoggedIn ? (
             <>
-              <li className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group">
+              <li
+                onClick={() => navigate('/login')}
+                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+              >
                 Login
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
               </li>
-              <li className="relative px-3 py-2 transition-all duration-300 bg-[#703BF7] text-white rounded-full px-4 hover:bg-[#5f2cc6] cursor-pointer group">
+              <li
+                onClick={() => navigate('/register')}
+                className="relative px-3 py-2 transition-all duration-300 bg-[#703BF7] text-white rounded-full px-4 hover:bg-[#5f2cc6] cursor-pointer group"
+              >
                 Sign Up
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#fff] transition-all duration-300 group-hover:w-full"></span>
               </li>
-              <li className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group">
-                Help
+              <li
+                onClick={() => navigate('/bagent')}
+                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+              >
+                Become an Agent
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
               </li>
             </>
           ) : (
-            <li className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group">
+            <li
+              onClick={() => navigate('/profile')}
+              className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+            >
               Profile
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
             </li>
