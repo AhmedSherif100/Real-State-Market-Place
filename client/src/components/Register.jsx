@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
-import ThemeToggle from "./ThemeToggle";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const formVariants = {
   initial: { opacity: 0, x: 100, scale: 0.95 },
@@ -20,21 +19,26 @@ const formVariants = {
   },
 };
 
-const Register = () => {
+export default function Register() {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
   });
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
+
+  const inputClass =
+    'w-full p-4 bg-[#1a1a1a] text-white placeholder-gray-400 rounded-2xl shadow-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-600';
+  const buttonClass =
+    'w-full px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-500 hover:to-purple-300 text-white font-semibold shadow-xl transition';
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
-    setFormData({ firstName: "", lastName: "", email: "", password: "" });
-    setMessage("");
+    setFormData({ firstName: '', lastName: '', email: '', password: '' });
+    setMessage('');
   };
 
   const handleChange = (e) => {
@@ -48,43 +52,45 @@ const Register = () => {
     try {
       let response;
       if (isLogin) {
-        // Direct API call for login
-        response = await axios.post("http://localhost:8000/api/auth/login", formData);
+        response = await axios.post(
+          'http://localhost:8000/api/auth/login',
+          formData
+        );
       } else {
-        // Direct API call for registration
-       axios.post('http://localhost:8000/api/auth/register', formData, { withCredentials: true });
- 
+        response = await axios.post(
+          'http://localhost:8000/api/auth/register',
+          formData,
+          { withCredentials: true }
+        );
       }
 
       if (response.status === 200 || response.status === 201) {
         if (isLogin) {
-          navigate("/dashboard");
+          navigate('/dashboard');
         } else {
-          setIsLogin(true); // Switch to login mode
-          setMessage("Registration successful. Please log in.");
+          setIsLogin(true);
+          setMessage('Registration successful. Please log in.');
         }
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || "An error occurred");
+      setMessage(error.response?.data?.message || 'An error occurred');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-100 transition-colors duration-300 p-4 relative">
-      <ThemeToggle />
-
-      <div className="rounded-xl shadow-lg w-full max-w-md p-6 overflow-hidden border border-base-300 bg-base-200">
+    <div className="min-h-screen flex items-center justify-center bg-[#121212] p-4">
+      <div className="max-w-md w-full bg-[#1a1a1a] border border-gray-700 rounded-2xl shadow-xl p-8">
         <AnimatePresence mode="wait">
           <motion.div
-            key={isLogin ? "login" : "signup"}
+            key={isLogin ? 'login' : 'signup'}
             variants={formVariants}
             initial="initial"
             animate="animate"
             exit="exit"
-            className="space-y-4"
+            className="space-y-6"
           >
-            <h1 className="text-3xl font-semibold text-center text-base-content mb-6">
-              {isLogin ? "Login" : "Sign Up"}
+            <h1 className="text-4xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-white">
+              {isLogin ? 'Login' : 'Sign Up'}
             </h1>
 
             {!isLogin && (
@@ -95,7 +101,7 @@ const Register = () => {
                   value={formData.firstName}
                   onChange={handleChange}
                   placeholder="First Name"
-                  className="input input-bordered w-full"
+                  className={inputClass}
                 />
                 <input
                   type="text"
@@ -103,7 +109,7 @@ const Register = () => {
                   value={formData.lastName}
                   onChange={handleChange}
                   placeholder="Last Name"
-                  className="input input-bordered w-full"
+                  className={inputClass}
                 />
               </>
             )}
@@ -114,7 +120,7 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Email"
-              className="input input-bordered w-full"
+              className={inputClass}
             />
 
             <input
@@ -123,29 +129,29 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="Password"
-              className="input input-bordered w-full"
+              className={inputClass}
             />
 
-            <button onClick={handleSubmit} className="btn btn-primary w-full">
-              {isLogin ? "Login" : "Sign Up"}
+            <button onClick={handleSubmit} className={buttonClass}>
+              {isLogin ? 'Login' : 'Sign Up'}
             </button>
 
-            <div className="text-center text-sm text-base-content mt-2 space-y-1">
+            <div className="text-center text-sm text-gray-400">
               <p>
                 {isLogin
                   ? "Don't have an account?"
-                  : "Already have an account?"}{" "}
+                  : 'Already have an account?'}{' '}
                 <button
                   onClick={toggleForm}
-                  className="text-primary underline hover:text-primary-focus transition"
+                  className="underline text-purple-400 hover:text-purple-300 transition"
                 >
-                  {isLogin ? "Sign Up" : "Login"}
+                  {isLogin ? 'Sign Up' : 'Login'}
                 </button>
               </p>
               {isLogin && (
                 <button
-                  onClick={() => navigate("/forget-password")}
-                  className="text-primary underline hover:text-primary-focus transition"
+                  onClick={() => navigate('/forget-password')}
+                  className="mt-2 underline text-purple-400 hover:text-purple-300 transition"
                 >
                   Forgot Password?
                 </button>
@@ -153,16 +159,11 @@ const Register = () => {
             </div>
 
             {message && (
-              <p className="text-center text-sm text-secondary mt-2">
-                {message}
-              </p>
+              <p className="text-center text-sm text-red-500">{message}</p>
             )}
-            <p> hello worlds </p>
           </motion.div>
         </AnimatePresence>
       </div>
     </div>
   );
-};
-
-export default Register;
+}
