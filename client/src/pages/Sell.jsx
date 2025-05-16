@@ -64,7 +64,7 @@ export default function Sell() {
   const back = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
 
   const handleSubmit = async () => {
-    const userId = 'Null';
+    const userId = 'null';
 
     const payload = {
       title: formData.title,

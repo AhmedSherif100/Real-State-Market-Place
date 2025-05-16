@@ -10,6 +10,7 @@ import Properties from './pages/Properties';
 import Rent from './pages/Rent';
 import Buy from './pages/Buy';
 import Sell from './pages/Sell';
+import PropertyDetail from './pages/PropertyDetail';
 const App = () => {
   return (
     <div className="relative min-h-screen bg-base-100 transition-colors duration-300">
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/rent" element={<Rent />} />
         <Route path="/buy" element={<Buy />} />
         <Route path="/sell" element={<Sell />} />
+        <Route path="/property/:id" element={<PropertyDetail />} />
       </Routes>
     </div>
   );
