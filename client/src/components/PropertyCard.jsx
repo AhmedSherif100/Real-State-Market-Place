@@ -1,6 +1,8 @@
 import React from 'react';
 import { FaBed, FaBath, FaRulerCombined, FaMapMarkerAlt } from 'react-icons/fa';
 
+const placeholderImage = 'https://via.placeholder.com/300x200?text=No+Image';
+
 const PropertyCard = ({ property }) => {
   const {
     title,
@@ -13,11 +15,27 @@ const PropertyCard = ({ property }) => {
     media,
   } = property;
 
-  const image = `../uploads/${media[0]}`;
+  console.log(`Property "${title}" Media:`, media);
+
+  const backendBaseUrl = 'http://localhost:8000';
+  const imagePath = media && Array.isArray(media) && media[0] ? media[0] : '';
+  const image = imagePath
+    ? `${backendBaseUrl}/api/uploads/${imagePath}`
+    : placeholderImage;
+
+  console.log(`Property "${title}" Image URL:`, image);
 
   return (
     <div className="max-w-sm rounded-2xl overflow-hidden shadow-lg bg-[#1a1a1a] hover:shadow-2xl transition-shadow duration-300 border border-[#252525]">
-      <img className="w-full h-48 object-cover" src={image} alt={title} />
+      <img
+        className="w-full h-48 object-cover"
+        src={image}
+        alt={title}
+        onError={(e) => {
+          console.error(`Failed to load image: ${image}`);
+          e.target.src = placeholderImage;
+        }}
+      />
       <div className="p-4 space-y-2">
         <h2 className="text-xl font-semibold text-white">{title}</h2>
         <p className="text-gray-400 text-sm flex items-center gap-1">

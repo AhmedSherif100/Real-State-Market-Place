@@ -8,22 +8,30 @@ function Buy() {
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/api/properties')
       .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
         return res.json();
       })
       .then((data) => {
-        if (data?.data?.properties) {
-          // Filter only properties with listingType 'sale'
+        console.log('API Response:', data); // Debug: Log full response
+        if (data?.data?.properties && Array.isArray(data.data.properties)) {
           const saleProperties = data.data.properties.filter(
             (property) => property.listingType === 'sale'
           );
+          console.log('Sale Properties:', saleProperties); // Debug: Log filtered properties
           setProperties(saleProperties);
           setFilteredProperties(saleProperties);
+          if (saleProperties.length === 0) {
+            console.warn('No properties with listingType "sale" found.');
+          }
         } else {
-          console.warn('No properties found in API response');
+          console.warn('Invalid or empty properties in API response:', data);
           setProperties([]);
           setFilteredProperties([]);
         }
@@ -31,6 +39,7 @@ function Buy() {
       })
       .catch((err) => {
         console.error('Error fetching properties:', err);
+        setError('Failed to load properties. Please try again later.');
         setLoading(false);
       });
   }, []);
@@ -44,7 +53,6 @@ function Buy() {
     const lowerSearch = searchTerm.toLowerCase();
     const filtered = properties.filter((property) => {
       try {
-        // Since properties are already filtered for 'sale', no need to check listingType again
         const mainFields = [
           property.title || '',
           property.description || '',
@@ -93,6 +101,7 @@ function Buy() {
     });
 
     setFilteredProperties(filtered);
+    console.log('Filtered Properties:', filtered); // Debug: Log search results
   }, [searchTerm, properties]);
 
   const handleSearch = (term) => {
@@ -125,6 +134,17 @@ function Buy() {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-[#121212] text-[#fff] min-h-screen">
+        <Navbar />
+        <div className="px-6 md:px-16 py-20 text-center">
+          <p className="text-red-400">{error}</p>
         </div>
       </div>
     );
@@ -164,9 +184,13 @@ function Buy() {
         <h2 className="text-3xl font-bold text-center mb-10">
           Browse Properties for Sale
         </h2>
-        {filteredProperties.length === 0 ? (
+        {properties.length === 0 ? (
           <p className="text-center text-gray-400">
-            No properties for sale found. Try adjusting your search.
+            No properties for sale are currently available.
+          </p>
+        ) : filteredProperties.length === 0 ? (
+          <p className="text-center text-gray-400">
+            No properties match your search. Try adjusting your search terms.
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
