@@ -39,10 +39,11 @@ module.exports.register = catchAsync(async (req, res, next) => {
   // Create a JWT token to login the user
   const token = createJWTToken(newUser, res);
 
-  // Redirect user to homepage
+  // Respond to the frontend
   res.status(201).json({
     status: 'success',
     data: {
+      user: newUser,
       message: 'User created successfully!',
     },
   });
@@ -73,6 +74,7 @@ module.exports.login = catchAsync(async (req, res, next) => {
     status: 'success',
     token,
     data: {
+      user,
       message: 'Logged in successfully!',
     },
   });
