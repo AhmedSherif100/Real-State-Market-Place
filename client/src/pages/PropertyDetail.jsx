@@ -442,7 +442,7 @@ const PropertyDetail = () => {
                 </a>
 
                 <a
-                  href="https://wa.me/1234567890"
+                  href="https://wa.me/1234567890" //i should replace the number with the number of lister!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   className="flex flex-col items-center justify-center p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
                 >
                   <FaWhatsapp className="text-xl mb-1" />
