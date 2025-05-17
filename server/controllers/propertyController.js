@@ -1,7 +1,6 @@
 const propertyModel = require('../models/propertyModel.js');
 const catchAsync = require('../utils/catchAsync.js');
 const appError = require('../utils/appError.js');
-
 exports.createProperty = catchAsync(async (req, res) => {
   const newProperty = await propertyModel.create(req.body);
   res.status(201).json({

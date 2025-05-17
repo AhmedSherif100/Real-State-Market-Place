@@ -64,7 +64,12 @@ export default function Sell() {
   const back = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
 
   const handleSubmit = async () => {
-    const userId = 'null';
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login to list a property');
+      navigate('/login');
+      return;
+    }
 
     const payload = {
       title: formData.title,
@@ -85,8 +90,7 @@ export default function Sell() {
       media: formData.media,
       buildDate: formData.buildDate,
       price: Number(formData.price) || 0,
-      status: formData.status,
-      user: userId,
+      status: 'active',
       features: {
         bedrooms: Number(formData.bedrooms) || 0,
         bathrooms: Number(formData.bathrooms) || 0,
@@ -106,16 +110,27 @@ export default function Sell() {
     };
 
     try {
-      console.log('Submitting payload:', JSON.stringify(payload, null, 2));
-      //upload images//
-      alert('Property successfully listed!');
-      navigate('/buy');
+      const response = await fetch('http://localhost:8000/api/properties', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        alert('Property successfully listed!');
+        navigate('/buy');
+      } else {
+        throw new Error(data.message || 'Failed to list property');
+      }
     } catch (err) {
-      console.error('Submission error:', err.response?.data || err.message);
+      console.error('Submission error:', err);
       alert(
-        `Error ${err.response?.status || 'Unknown'}: ${
-          err.response?.data?.message || err.message
-        }`
+        `Error: ${err.message || 'Failed to list property. Please try again.'}`
       );
     }
   };
