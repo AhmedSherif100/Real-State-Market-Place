@@ -8,7 +8,7 @@ router.get('/', propertyController.getAllProperties); // GET              /api/p
 router.get('/:id', propertyController.getPropertyById); // GET            /api/properties/:id
 
 // Protected Routes [User must be logged in]
-router.use(authMiddleware.protect);
+//router.use(authMiddleware.protect);
 router.post('/', propertyController.createProperty);
 router.patch('/:id', propertyController.updatePropertyById); // PATCH     /api/properties/:id
 router.delete('/:id', propertyController.deletePropertyById); // DELETE   /api/properties/:id

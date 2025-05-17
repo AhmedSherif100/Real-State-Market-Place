@@ -1,8 +1,8 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Home } from './pages';
-import { Route, Routes } from 'react-router-dom';
 import Register from './components/Register';
 import Login from './components/Login';
-
 import ForgetPassword from './components/ForgetPassword';
 import ResetPassword from './components/ResetPassword';
 import Dashboard from './pages/Dashboard';
@@ -12,24 +12,20 @@ import Properties from './pages/Properties';
 import Rent from './pages/Rent';
 import Buy from './pages/Buy';
 import Sell from './pages/Sell';
-
-
 import PropertyDetail from './pages/PropertyDetail';
-import Agnet from './pages/Agent';
-import BecomeAgent from './pages/BecomeAgent';
 import Agent from './pages/Agent';
+import BecomeAgent from './pages/BecomeAgent';
 import CreateAgent from './pages/CreateAgent';
 import ManageAgents from './pages/ManageAgents';
-
-
-
-
+import Profile from './pages/Profile';
+import Reviews from './pages/Reviews';
+import ReviewForm from './components/ReviewForm';
 
 const App = () => {
   return (
     <div className="relative min-h-screen bg-base-100 transition-colors duration-300">
       <Routes>
-        <Route path="/" element={<Home />} /> // same as /
+        <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -42,13 +38,13 @@ const App = () => {
         <Route path="/rent" element={<Rent />} />
         <Route path="/buy" element={<Buy />} />
         <Route path="/sell" element={<Sell />} />
-
         <Route path="/agent" element={<Agent/>} />
         <Route path="/bagent" element={<BecomeAgent />} />
         <Route path="/create-agent" element={<CreateAgent />} />
-
         <Route path="/property/:id" element={<PropertyDetail />} />
-
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/reviews" element={<Reviews />} />
+        <Route path="/write-review" element={<ReviewForm />} />
       </Routes>
     </div>
   );

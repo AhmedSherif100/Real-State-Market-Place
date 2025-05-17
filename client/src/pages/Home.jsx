@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { FiSearch } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import FeaturedProperties from '../components/FeaturedProperties';
+import { FaStar } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const HomePage = () => {
   const customerSuccessData = [
@@ -23,6 +25,7 @@ const HomePage = () => {
   ];
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     fetch('http://127.0.0.1:8000/api/properties')
@@ -44,45 +47,46 @@ const HomePage = () => {
       });
   }, []);
 
-  const testimonials = [
-    {
-      name: 'Sarah Johnson',
-      text: 'Found my dream home in just a week!',
-      rating: 5,
-    },
-    {
-      name: 'Michael Brown',
-      text: 'The agents were incredibly helpful.',
-      rating: 5,
-    },
-    {
-      name: 'Emily Davis',
-      text: 'Smooth process from start to finish.',
-      rating: 4,
-    },
-  ];
+  useEffect(() => {
+    fetchRandomReviews();
+  }, []);
+
+  const fetchRandomReviews = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/reviews');
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        // Get 3 random reviews
+        const shuffled = [...data.data.reviews].sort(() => 0.5 - Math.random());
+        setReviews(shuffled.slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const faqs = [
     {
       question: 'How do I search for properties?',
-      answer: 'Use the search bar to enter your preferred location.',
+      answer: 'Use the search bar to enter your preferred location.'
     },
     {
       question: 'What documents do I need to sell?',
-      answer: 'You’ll need property deeds and identification.',
+      answer: 'You\'ll need property deeds and identification.'
     },
     {
       question: 'How can I contact an agent?',
-      answer: 'Use the "Find an Agent" feature.',
-    },
+      answer: 'Use the "Find an Agent" feature.'
+    }
   ];
 
   return (
     <div className="bg-[#121212] text-[#fff] min-h-screen">
-      {}
       <Navbar />
 
-      {}
       <section
         className="relative flex flex-col md:flex-row items-center justify-start px-6 md:px-16 py-20 bg-[#121212] bg-cover bg-center"
         style={{
@@ -90,7 +94,7 @@ const HomePage = () => {
           backgroundAttachment: 'fixed',
         }}
       >
-        <div className="absolute inset-0 bg-[#000000] opacity-50"></div> {}
+        <div className="absolute inset-0 bg-[#000000] opacity-50"></div>
         <div className="relative max-w-xl space-y-6 z-10">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight">
             Agents. <br /> Tours. <br /> Loans. <br />{' '}
@@ -155,23 +159,60 @@ const HomePage = () => {
         <FeaturedProperties properties={properties} />
       )}
 
-      {/* Testimonials */}
-      <section className="px-6 md:px-16 py-20 bg-[#1a1a1a]">
-        <h2 className="text-3xl font-bold text-center mb-10">
-          What Our Clients Say
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map((testimonial, index) => (
-            <div key={index} className="bg-[#252525] p-6 rounded-lg">
-              <p className="text-gray-400">{testimonial.text}</p>
-              <div className="mt-4 flex items-center">
-                <div className="text-yellow-400">
-                  {'★'.repeat(testimonial.rating)}
+      {/* Testimonials Section */}
+      <section className="py-20 bg-[#121212]">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff]">
+            What Our Clients Say
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {loading ? (
+              // Loading skeleton
+              [...Array(3)].map((_, index) => (
+                <div key={index} className="bg-[#1a1a1a] p-6 rounded-lg animate-pulse">
+                  <div className="h-4 bg-gray-700 rounded w-1/4 mb-4"></div>
+                  <div className="h-4 bg-gray-700 rounded w-1/2 mb-4"></div>
+                  <div className="h-20 bg-gray-700 rounded"></div>
                 </div>
-                <p className="ml-2 font-semibold">{testimonial.name}</p>
+              ))
+            ) : reviews.length > 0 ? (
+              reviews.map((review) => (
+                <div
+                  key={review._id}
+                  className="bg-[#1a1a1a] p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold">{review.reviewerName}</h3>
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, index) => (
+                        <FaStar
+                          key={index}
+                          className="text-xl"
+                          color={index < review.rating ? '#FFD700' : '#4B5563'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-gray-300 mb-4">{review.reviewText}</p>
+                  <div className="text-sm text-gray-400">
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center text-gray-400">
+                <p className="text-xl">No reviews yet. Be the first to write one!</p>
               </div>
-            </div>
-          ))}
+            )}
+          </div>
+          <div className="text-center mt-8">
+            <Link
+              to="/reviews"
+              className="inline-block bg-[#703BF7] text-white px-6 py-2 rounded-lg hover:bg-[#5f2cc6] transition-colors"
+            >
+              View All Reviews
+            </Link>
+          </div>
         </div>
       </section>
 

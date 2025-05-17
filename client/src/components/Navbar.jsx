@@ -1,10 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaUser, FaSignOutAlt } from 'react-icons/fa';
 
 const Navbar = () => {
-  const navigate = useNavigate(); // ✅ Hook must be inside component
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Replace with actual auth check
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const userRole = 'agent';
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    navigate('/login');
+  };
 
   return (
     <nav className="bg-gradient-to-r from-[#141414] via-[#1a1a1a] to-[#141414] text-[#fff] px-6 py-5 flex items-center justify-between shadow-[0_4px_12px_rgba(112,59,247,0.2)] font-urbanist sticky top-0 z-50">
@@ -39,7 +51,6 @@ const Navbar = () => {
             Find an Agent
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
           </li>
-         
         </ul>
 
         {/* Centered Logo */}
@@ -52,17 +63,8 @@ const Navbar = () => {
 
         {/* Right Nav Links */}
         <ul className="flex gap-6 items-center text-sm font-semibold">
-          {/* <li
-            onClick={() => navigate('/manage-properties')}
-            className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
-          >
-            Manage Properties
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
-          </li> */}
-          
           {!isLoggedIn ? (
             <>
-              
               <li
                 onClick={() => navigate('/bagent')}
                 className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
@@ -71,13 +73,13 @@ const Navbar = () => {
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
               </li>
               <li
-            onClick={() => navigate('/notifications')}
-            className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
-          >
-            Notifications
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
-          </li>
-          <li
+                onClick={() => navigate('/notifications')}
+                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+              >
+                Notifications
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
+              </li>
+              <li
                 onClick={() => navigate('/login')}
                 className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
               >
@@ -93,13 +95,24 @@ const Navbar = () => {
               </li>
             </>
           ) : (
-            <li
-              onClick={() => navigate('/profile')}
-              className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
-            >
-              Profile
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
-            </li>
+            <>
+              <li
+                onClick={() => navigate('/profile')}
+                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group flex items-center gap-2"
+              >
+                <FaUser className="text-lg" />
+                Profile
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
+              </li>
+              <li
+                onClick={handleLogout}
+                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group flex items-center gap-2"
+              >
+                <FaSignOutAlt className="text-lg" />
+                Logout
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
+              </li>
+            </>
           )}
         </ul>
       </div>
