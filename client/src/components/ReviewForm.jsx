@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaStar, FaUser, FaBuilding } from 'react-icons/fa';
 import Navbar from './Navbar';
-
 const ReviewForm = () => {
   const navigate = useNavigate();
   const [agents, setAgents] = useState([]);
@@ -15,7 +14,6 @@ const ReviewForm = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     fetchAgents();
     setIsLoading(false);

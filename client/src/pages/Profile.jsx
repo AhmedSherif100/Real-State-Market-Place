@@ -3,12 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import PropertyCard from '../components/PropertyCard';
+import { useAuth } from '../context/AuthContext';
 
 const API_URL = 'http://localhost:8000/api';
 
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true, // Enable cookies
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, isAuthenticated } = useAuth();
   const [userProperties, setUserProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -23,57 +33,38 @@ const Profile = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // Redirect if not authenticated
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          navigate('/login');
-          return;
+        setLoading(true);
+
+        // Fetch user's properties
+        const propertiesResponse = await api.get('/properties');
+
+        if (propertiesResponse.data.status === 'success') {
+          const userProps = propertiesResponse.data.data.properties.filter(
+            prop => prop.user === user._id
+          );
+          setUserProperties(userProps);
         }
 
-        console.log('Fetching user data from API...');
-        const response = await axios.get(`${API_URL}/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        // Set form data from user context
+        setFormData({
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.email || '',
+          phoneNumber: user.phoneNumber || '',
+          whatsapp: user.whatsapp || '',
+          contactEmail: user.contactEmail || ''
         });
 
-        console.log('Received user data from API:', response.data);
-
-        if (response.data.status === 'success' && response.data.data.user) {
-          const userData = response.data.data.user;
-          console.log('Setting user data from API:', userData);
-          
-          setUser(userData);
-          setFormData({
-            firstName: userData.firstName || '',
-            lastName: userData.lastName || '',
-            email: userData.email || '',
-            phoneNumber: userData.phoneNumber || '',
-            whatsapp: userData.whatsapp || '',
-            contactEmail: userData.contactEmail || ''
-          });
-
-          // Fetch user's properties
-          const propertiesResponse = await axios.get(`${API_URL}/properties`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-
-          if (propertiesResponse.data.status === 'success') {
-            const userProps = propertiesResponse.data.data.properties.filter(
-              prop => prop.user === userData._id
-            );
-            setUserProperties(userProps);
-          }
-        } else {
-          throw new Error('Invalid user data received');
-        }
       } catch (err) {
         console.error('Error:', err);
-        console.error('Error response:', err.response?.data);
-        
         if (err.response?.data?.message) {
           setError(err.response.data.message);
         } else if (err.response?.data?.error) {
@@ -87,7 +78,7 @@ const Profile = () => {
     };
 
     fetchUserData();
-  }, [navigate]);
+  }, [navigate, isAuthenticated, user]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -102,38 +93,27 @@ const Profile = () => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
-      console.log('Updating user with data:', formData);
-      const response = await axios.patch(
-        `${API_URL}/auth/updateMe`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      console.log('Update response:', response.data);
+      const response = await api.patch('/auth/updateMe', formData);
 
       if (response.data.status === 'success') {
         const updatedUser = response.data.data.user;
-        setUser(updatedUser);
+        // Update the form data with the new user data
+        setFormData({
+          firstName: updatedUser.firstName || '',
+          lastName: updatedUser.lastName || '',
+          email: updatedUser.email || '',
+          phoneNumber: updatedUser.phoneNumber || '',
+          whatsapp: updatedUser.whatsapp || '',
+          contactEmail: updatedUser.contactEmail || ''
+        });
         setEditMode(false);
-        alert('Profile updated successfully!');
+        // Refresh the page to update the auth context
+        window.location.reload();
       } else {
         throw new Error(response.data.message || 'Failed to update profile');
       }
     } catch (err) {
       console.error('Error:', err);
-      console.error('Error response:', err.response?.data);
-      
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.response?.data?.error) {
@@ -151,22 +131,7 @@ const Profile = () => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
-      const response = await axios.patch(
-        `${API_URL}/properties/${propertyId}`,
-        updatedData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      const response = await api.patch(`/properties/${propertyId}`, updatedData);
 
       if (response.data.status === 'success') {
         setUserProperties(prevProps =>
@@ -180,8 +145,6 @@ const Profile = () => {
       }
     } catch (err) {
       console.error('Error:', err);
-      console.error('Error response:', err.response?.data);
-      
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.response?.data?.error) {
