@@ -21,7 +21,8 @@ function Login() {
     setError('');
     try {
       const response = await loginService(formData.email, formData.password);
-      login(response.data.user, response.data.token);
+      // The token is now in an HTTP-only cookie, so we don't need to handle it here
+      login(response.data.user);
       navigate('/');
     } catch (err) {
       console.error('Login failed:', err);

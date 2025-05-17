@@ -1,21 +1,18 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
+import { FaUser, FaSignOutAlt, FaBell } from 'react-icons/fa';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const userRole = 'agent';
+  const { user, logout, isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -63,7 +60,7 @@ const Navbar = () => {
 
         {/* Right Nav Links */}
         <ul className="flex gap-6 items-center text-sm font-semibold">
-          {!isLoggedIn ? (
+          {!isAuthenticated ? (
             <>
               <li
                 onClick={() => navigate('/bagent')}
@@ -74,8 +71,9 @@ const Navbar = () => {
               </li>
               <li
                 onClick={() => navigate('/notifications')}
-                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group flex items-center gap-2"
               >
+                <FaBell className="text-lg" />
                 Notifications
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
               </li>
@@ -97,11 +95,19 @@ const Navbar = () => {
           ) : (
             <>
               <li
+                onClick={() => navigate('/notifications')}
+                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group flex items-center gap-2"
+              >
+                <FaBell className="text-lg" />
+                Notifications
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
+              </li>
+              <li
                 onClick={() => navigate('/profile')}
                 className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group flex items-center gap-2"
               >
                 <FaUser className="text-lg" />
-                Profile
+                {user?.firstName || 'Profile'}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
               </li>
               <li

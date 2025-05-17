@@ -30,19 +30,11 @@ function Register() {
     try {
       console.log('Submitting registration form with data:', formData);
       const response = await registerService(formData);
-      console.log('Registration response:', response);
+      login(response.data.user);
+      setSuccess(true);
+      setMessage('Registration successful! Redirecting...');
+      setTimeout(() => navigate('/'), 2000);
 
-      if (response.status === 'success') {
-        // Update auth context with user data
-        login(response.data.user, response.data.token);
-        
-        setSuccess(true);
-        setMessage('Registration successful! Redirecting...');
-        
-        setTimeout(() => navigate('/profile'), 2000);
-      } else {
-        throw new Error(response.message || 'Registration failed');
-      }
     } catch (error) {
       console.error('Registration error:', error);
       setSuccess(false);
@@ -55,19 +47,10 @@ function Register() {
   return (
     <div className="bg-[#121212] text-white min-h-screen">
       <Navbar />
-      <section
-        className="relative flex flex-col items-center justify-center px-6 md:px-16 py-24 bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c')",
-          backgroundAttachment: 'fixed',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#121212] via-[#703BF7] to-[#121212] opacity-70"></div>
-        <div className="relative w-full max-w-lg z-10 space-y-6 bg-[#1a1a1a] border border-gray-700 rounded-2xl shadow-2xl p-10">
-          <h1 className="text-4xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-white">
-            Create an Account
-          </h1>
+      <section className="flex items-center justify-center py-24 px-6 md:px-16">
+        <div className="w-full max-w-md bg-[#1a1a1a] rounded-xl p-8 shadow-lg">
+          <h2 className="text-3xl font-bold mb-6 text-center">Create an Account</h2>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="text"
@@ -126,14 +109,14 @@ function Register() {
           </form>
           {message && (
             <p
-              className={`text-center text-sm ${
+              className={`text-center text-sm mt-4 ${
                 success ? 'text-green-400' : 'text-red-500'
               }`}
             >
               {message}
             </p>
           )}
-          <div className="text-center text-sm text-gray-400">
+          <div className="text-center text-sm text-gray-400 mt-4">
             Already have an account?{' '}
             <button
               onClick={() => navigate('/login')}
