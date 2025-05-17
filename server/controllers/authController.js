@@ -20,6 +20,8 @@ const createJWTToken = (user) => {
 
 module.exports.register = catchAsync(async (req, res, next) => {
   try {
+    console.log('Registration request body:', req.body);
+    
     // Add instance of a new user to database
     const newUser = await User.create({
       firstName: req.body.firstName,
@@ -27,6 +29,8 @@ module.exports.register = catchAsync(async (req, res, next) => {
       email: req.body.email,
       password: req.body.password,
     });
+
+    console.log('Created user:', newUser);
 
     // Create a JWT token
     const token = createJWTToken(newUser);
@@ -43,6 +47,7 @@ module.exports.register = catchAsync(async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error('Registration error:', error);
     if (error.name === 'ValidationError') {
       return next(new AppError(error.message, 400));
     }
@@ -207,5 +212,71 @@ module.exports.updatePassword = catchAsync(async (req, res, next) => {
     data: {
       message: 'Password updated successfully!',
     },
+  });
+});
+
+module.exports.getMe = catchAsync(async (req, res, next) => {
+  console.log('getMe request user ID:', req.user.id);
+  
+  // Find user without select to get all fields
+  const user = await User.findById(req.user.id);
+  console.log('Found user data:', user);
+  
+  if (!user) {
+    return next(new AppError('No user found', 404));
+  }
+
+  // Log the response data
+  const responseData = {
+    status: 'success',
+    data: {
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        active: user.active,
+        phoneNumber: user.phoneNumber,
+        whatsapp: user.whatsapp,
+        contactEmail: user.contactEmail,
+        profilePicture: user.profilePicture
+      }
+    }
+  };
+  console.log('Sending response:', responseData);
+
+  res.status(200).json(responseData);
+});
+
+module.exports.updateMe = catchAsync(async (req, res, next) => {
+  // 1) Create error if user POSTs password data
+  if (req.body.password) {
+    return next(
+      new AppError(
+        'This route is not for password updates. Please use /updatePassword.',
+        400
+      )
+    );
+  }
+
+  // 2) Filter out unwanted fields names that are not allowed to be updated
+  const filteredBody = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email
+  };
+
+  // 3) Update user document
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+    new: true,
+    runValidators: true
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser
+    }
   });
 });

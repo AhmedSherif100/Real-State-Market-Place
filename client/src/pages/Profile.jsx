@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Navbar from '../components/Navbar';
 import PropertyCard from '../components/PropertyCard';
+
+const API_URL = 'http://localhost:8000/api';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -13,53 +16,78 @@ const Profile = () => {
     firstName: '',
     lastName: '',
     email: '',
+    phoneNumber: '',
+    whatsapp: '',
+    contactEmail: '',
   });
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
 
-    // Fetch user data
-    fetch('http://localhost:8000/api/auth/me', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success') {
-          setUser(data.data.user);
-          setFormData({
-            firstName: data.data.user.firstName || '',
-            lastName: data.data.user.lastName || '',
-            email: data.data.user.email || '',
-          });
+        console.log('Fetching user data from API...');
+        const response = await axios.get(`${API_URL}/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Received user data from API:', response.data);
+
+        if (response.data.status === 'success' && response.data.data.user) {
+          const userData = response.data.data.user;
+          console.log('Setting user data from API:', userData);
           
+          setUser(userData);
+          setFormData({
+            firstName: userData.firstName || '',
+            lastName: userData.lastName || '',
+            email: userData.email || '',
+            phoneNumber: userData.phoneNumber || '',
+            whatsapp: userData.whatsapp || '',
+            contactEmail: userData.contactEmail || ''
+          });
+
           // Fetch user's properties
-          return fetch('http://localhost:8000/api/properties', {
+          const propertiesResponse = await axios.get(`${API_URL}/properties`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
           });
+
+          if (propertiesResponse.data.status === 'success') {
+            const userProps = propertiesResponse.data.data.properties.filter(
+              prop => prop.user === userData._id
+            );
+            setUserProperties(userProps);
+          }
+        } else {
+          throw new Error('Invalid user data received');
         }
-      })
-      .then(res => res?.json())
-      .then(data => {
-        if (data?.status === 'success') {
-          // Filter properties to only show those owned by the current user
-          const userProps = data.data.properties.filter(
-            prop => prop.user === user?._id
-          );
-          setUserProperties(userProps);
+      } catch (err) {
+        console.error('Error:', err);
+        console.error('Error response:', err.response?.data);
+        
+        if (err.response?.data?.message) {
+          setError(err.response.data.message);
+        } else if (err.response?.data?.error) {
+          setError(err.response.data.error);
+        } else {
+          setError('Failed to load profile data. Please try again.');
         }
-      })
-      .catch(err => console.error('Error fetching data:', err))
-      .finally(() => setLoading(false));
-  }, [navigate, user?._id]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -70,55 +98,99 @@ const Profile = () => {
 
   const handleUpdateUser = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    setLoading(true);
+    setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/updateMe', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
 
-      const data = await response.json();
-      if (data.status === 'success') {
-        setUser(data.data.user);
+      console.log('Updating user with data:', formData);
+      const response = await axios.patch(
+        `${API_URL}/auth/updateMe`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      console.log('Update response:', response.data);
+
+      if (response.data.status === 'success') {
+        const updatedUser = response.data.data.user;
+        setUser(updatedUser);
         setEditMode(false);
         alert('Profile updated successfully!');
+      } else {
+        throw new Error(response.data.message || 'Failed to update profile');
       }
     } catch (err) {
-      console.error('Error updating profile:', err);
-      alert('Failed to update profile. Please try again.');
+      console.error('Error:', err);
+      console.error('Error response:', err.response?.data);
+      
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Failed to update profile. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUpdateProperty = async (propertyId, updatedData) => {
-    const token = localStorage.getItem('token');
+    setLoading(true);
+    setError('');
 
     try {
-      const response = await fetch(`http://localhost:8000/api/properties/${propertyId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(updatedData)
-      });
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
 
-      const data = await response.json();
-      if (data.status === 'success') {
+      const response = await axios.patch(
+        `${API_URL}/properties/${propertyId}`,
+        updatedData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data.status === 'success') {
         setUserProperties(prevProps =>
           prevProps.map(prop =>
-            prop._id === propertyId ? data.data.property : prop
+            prop._id === propertyId ? response.data.data.property : prop
           )
         );
         alert('Property updated successfully!');
+      } else {
+        throw new Error(response.data.message || 'Failed to update property');
       }
     } catch (err) {
-      console.error('Error updating property:', err);
-      alert('Failed to update property. Please try again.');
+      console.error('Error:', err);
+      console.error('Error response:', err.response?.data);
+      
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Failed to update property. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -142,92 +214,176 @@ const Profile = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="bg-[#121212] text-[#fff] min-h-screen">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-red-500 mb-4">Error</h2>
+            <p className="text-gray-400 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-[#703BF7] text-white px-6 py-2 rounded-lg hover:bg-[#5f2cc6] transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#121212] text-[#fff] min-h-screen">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff]">
-          Profile Settings
-        </h1>
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] via-purple-500 to-[#fff] inline-block">
+            Profile Settings
+          </h1>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#703BF7] to-purple-500 mx-auto mt-4 rounded-full"></div>
+        </div>
         
         {/* User Information Section */}
-        <div className="bg-[#1a1a1a] rounded-lg p-6 mb-8 shadow-lg border border-[#252525] hover:shadow-2xl transition-shadow duration-300">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff]">
+        <div className="bg-[#1a1a1a] rounded-2xl p-8 mb-8 shadow-lg border border-[#252525] hover:shadow-2xl transition-shadow duration-300 max-w-4xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff]">
               Personal Information
             </h2>
             <button
               onClick={() => setEditMode(!editMode)}
-              className="bg-[#703BF7] text-white px-4 py-2 rounded-full hover:bg-[#5f2cc6] transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-[#703BF7] to-purple-500 text-white px-6 py-2 rounded-full hover:from-purple-600 hover:to-purple-400 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               {editMode ? 'Cancel' : 'Edit Profile'}
             </button>
           </div>
 
           {editMode ? (
-            <form onSubmit={handleUpdateUser} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-400">First Name</label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 rounded bg-[#252525] border border-gray-700 focus:border-[#703BF7] focus:outline-none transition-colors duration-300"
-                />
+            <form onSubmit={handleUpdateUser} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-[#252525] border border-gray-700 focus:border-[#703BF7] focus:outline-none transition-colors duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-[#252525] border border-gray-700 focus:border-[#703BF7] focus:outline-none transition-colors duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-[#252525] border border-gray-700 focus:border-[#703BF7] focus:outline-none transition-colors duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">Phone Number</label>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-[#252525] border border-gray-700 focus:border-[#703BF7] focus:outline-none transition-colors duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">WhatsApp</label>
+                  <input
+                    type="tel"
+                    name="whatsapp"
+                    value={formData.whatsapp}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-[#252525] border border-gray-700 focus:border-[#703BF7] focus:outline-none transition-colors duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">Contact Email</label>
+                  <input
+                    type="email"
+                    name="contactEmail"
+                    value={formData.contactEmail}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-xl bg-[#252525] border border-gray-700 focus:border-[#703BF7] focus:outline-none transition-colors duration-300"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-400">Last Name</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 rounded bg-[#252525] border border-gray-700 focus:border-[#703BF7] focus:outline-none transition-colors duration-300"
-                />
+              <div className="flex justify-end mt-8">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`bg-gradient-to-r from-[#703BF7] to-purple-500 text-white px-8 py-3 rounded-full hover:from-purple-600 hover:to-purple-400 transition-all duration-300 transform hover:scale-105 shadow-lg ${
+                    loading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-400">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 rounded bg-[#252525] border border-gray-700 focus:border-[#703BF7] focus:outline-none transition-colors duration-300"
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-[#703BF7] text-white px-6 py-2 rounded-full hover:bg-[#5f2cc6] transition-all duration-300 transform hover:scale-105"
-              >
-                Save Changes
-              </button>
             </form>
           ) : (
-            <div className="space-y-4">
-              <div>
-                <span className="text-gray-400">First Name:</span>
-                <p className="text-lg text-white">{user?.firstName}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="bg-[#252525] p-4 rounded-xl">
+                  <span className="text-gray-400 block text-sm mb-1">First Name</span>
+                  <p className="text-lg text-white font-medium">{user?.firstName}</p>
+                </div>
+                <div className="bg-[#252525] p-4 rounded-xl">
+                  <span className="text-gray-400 block text-sm mb-1">Last Name</span>
+                  <p className="text-lg text-white font-medium">{user?.lastName}</p>
+                </div>
+                <div className="bg-[#252525] p-4 rounded-xl">
+                  <span className="text-gray-400 block text-sm mb-1">Email</span>
+                  <p className="text-lg text-white font-medium">{user?.email}</p>
+                </div>
               </div>
-              <div>
-                <span className="text-gray-400">Last Name:</span>
-                <p className="text-lg text-white">{user?.lastName}</p>
-              </div>
-              <div>
-                <span className="text-gray-400">Email:</span>
-                <p className="text-lg text-white">{user?.email}</p>
+              <div className="space-y-4">
+                <div className="bg-[#252525] p-4 rounded-xl">
+                  <span className="text-gray-400 block text-sm mb-1">Phone Number</span>
+                  <p className="text-lg text-white font-medium">{user?.phoneNumber || 'Not provided'}</p>
+                </div>
+                <div className="bg-[#252525] p-4 rounded-xl">
+                  <span className="text-gray-400 block text-sm mb-1">WhatsApp</span>
+                  <p className="text-lg text-white font-medium">{user?.whatsapp || 'Not provided'}</p>
+                </div>
+                <div className="bg-[#252525] p-4 rounded-xl">
+                  <span className="text-gray-400 block text-sm mb-1">Contact Email</span>
+                  <p className="text-lg text-white font-medium">{user?.contactEmail || 'Not provided'}</p>
+                </div>
               </div>
             </div>
           )}
         </div>
 
         {/* User's Properties Section */}
-        <div className="bg-[#1a1a1a] rounded-lg p-6 shadow-lg border border-[#252525] hover:shadow-2xl transition-shadow duration-300">
-          <h2 className="text-2xl font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff]">
+        <div className="bg-[#1a1a1a] rounded-2xl p-8 shadow-lg border border-[#252525] hover:shadow-2xl transition-shadow duration-300 max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff]">
             My Listed Properties
           </h2>
           {userProperties.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">You haven't listed any properties yet.</p>
+            <div className="text-center py-12">
+              <p className="text-gray-400 text-lg">You haven't listed any properties yet.</p>
+              <button
+                onClick={() => navigate('/create-property')}
+                className="mt-4 bg-gradient-to-r from-[#703BF7] to-purple-500 text-white px-6 py-2 rounded-full hover:from-purple-600 hover:to-purple-400 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                List a Property
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {userProperties.map(property => (

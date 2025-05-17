@@ -19,8 +19,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gradient-to-r from-[#141414] via-[#1a1a1a] to-[#141414] text-[#fff] px-6 py-5 flex items-center justify-between shadow-[0_4px_12px_rgba(112,59,247,0.2)] font-urbanist sticky top-0 z-50">
-      <div className="w-full max-w-7xl flex items-center justify-between mx-auto">
+    <nav className="bg-gradient-to-r from-[#141414] via-[#1a1a1a] to-[#141414] text-[#fff] px-6 py-5 shadow-[0_4px_12px_rgba(112,59,247,0.2)] font-urbanist sticky top-0 z-50">
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
         {/* Left Nav Links */}
         <ul className="flex gap-6 items-center text-sm font-semibold">
           <li
@@ -56,7 +56,7 @@ const Navbar = () => {
         {/* Centered Logo */}
         <div 
           onClick={() => navigate('/')}
-          className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff] transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+          className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff] transform hover:scale-105 transition-transform duration-300 cursor-pointer absolute left-1/2 -translate-x-1/2"
         >
           Tamalak
         </div>

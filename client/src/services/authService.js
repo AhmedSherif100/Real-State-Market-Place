@@ -4,16 +4,28 @@ import { jwtDecode } from 'jwt-decode';
 const API_URL = 'http://localhost:8000/api';
 
 export const login = async (email, password) => {
-  const response = await axios.post(`${API_URL}/auth/login`, {
-    email,
-    password,
-  });
-  return response.data;
+  try {
+    const response = await axios.post(`${API_URL}/auth/login`, {
+      email,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Login error:', error.response?.data || error.message);
+    throw error;
+  }
 };
 
 export const register = async (userData) => {
-  const response = await axios.post(`${API_URL}/auth/register`, userData);
-  return response.data;
+  try {
+    console.log('Sending registration data:', userData);
+    const response = await axios.post(`${API_URL}/auth/register`, userData);
+    console.log('Registration response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Registration error:', error.response?.data || error.message);
+    throw error;
+  }
 };
 
 export const logout = async () => {
@@ -28,14 +40,15 @@ export const getUserFromToken = async (token) => {
 
   try {
     const decoded = jwtDecode(token);
-    const response = await axios.get(`${API_URL}/users/${decoded.id}`, {
+    const response = await axios.get(`${API_URL}/auth/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+    console.log('User data response:', response.data);
     return response.data.data.user;
   } catch (error) {
-    console.error('Error getting user data:', error);
+    console.error('Error getting user data:', error.response?.data || error.message);
     return null;
   }
 };
