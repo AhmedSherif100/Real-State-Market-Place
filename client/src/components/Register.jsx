@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { register as registerService } from '../services/authService';
 import Navbar from '../components/Navbar';
 
 function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -13,6 +15,7 @@ function Register() {
   });
   const [message, setMessage] = useState('');
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,21 +24,18 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const response = await axios.post(
-        'http://localhost:8000/api/auth/register',
-        formData,
-        { withCredentials: true }
-      );
-
-      if (response.status === 201 || response.status === 200) {
-        setSuccess(true);
-        setMessage('Registration successful! Please log in.');
-        setFormData({ firstName: '', lastName: '', email: '', password: '' });
-      }
+      const response = await registerService(formData);
+      login(response.data.user, response.data.token);
+      setSuccess(true);
+      setMessage('Registration successful! Redirecting...');
+      setTimeout(() => navigate('/'), 2000);
     } catch (error) {
       setSuccess(false);
       setMessage(error.response?.data?.message || 'Something went wrong.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -92,11 +92,23 @@ function Register() {
               className="w-full p-4 bg-[#252525] text-white placeholder-gray-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-600"
               required
             />
+            <div className="text-sm text-gray-400">
+              <p>Password must be at least 8 characters long and contain:</p>
+              <ul className="list-disc list-inside mt-1">
+                <li>At least one uppercase letter</li>
+                <li>At least one lowercase letter</li>
+                <li>At least one number</li>
+                <li>At least one special character</li>
+              </ul>
+            </div>
             <button
               type="submit"
-              className="w-full px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-500 hover:to-purple-300 text-white font-semibold shadow-xl transition"
+              disabled={loading}
+              className={`w-full px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-500 hover:to-purple-300 text-white font-semibold shadow-xl transition ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Register
+              {loading ? 'Creating Account...' : 'Register'}
             </button>
           </form>
           {message && (

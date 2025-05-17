@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { login as loginService } from '../services/authService';
 import Navbar from '../components/Navbar';
 
 function Login() {
   const navigate = useNavigate();
-
+  const { login } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,21 +20,12 @@ function Login() {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login', formData);
-
-      if (response.data?.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-
-      if (response.data?.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
-
-      console.log('Login successful:', response.data);
+      const response = await loginService(formData.email, formData.password);
+      login(response.data.user, response.data.token);
       navigate('/');
     } catch (err) {
       console.error('Login failed:', err);
-      setError('Invalid email or password.');
+      setError(err.response?.data?.message || 'Invalid email or password.');
     } finally {
       setLoading(false);
     }
@@ -84,12 +76,26 @@ function Login() {
             </button>
           </form>
 
-          <p className="mt-6 text-sm text-center text-gray-400">
-            Don’t have an account?{' '}
-            <a href="/signup" className="text-[#703BF7] hover:underline">
-              Sign up here
-            </a>
-          </p>
+          <div className="mt-6 space-y-4">
+            <p className="text-sm text-center text-gray-400">
+              Don't have an account?{' '}
+              <button
+                onClick={() => navigate('/register')}
+                className="text-[#703BF7] hover:underline"
+              >
+                Sign up here
+              </button>
+            </p>
+            <p className="text-sm text-center text-gray-400">
+              Forgot your password?{' '}
+              <button
+                onClick={() => navigate('/forget-password')}
+                className="text-[#703BF7] hover:underline"
+              >
+                Reset it here
+              </button>
+            </p>
+          </div>
         </div>
       </section>
       <footer className="bg-[#1a1a1a] py-6 text-center text-gray-400">
