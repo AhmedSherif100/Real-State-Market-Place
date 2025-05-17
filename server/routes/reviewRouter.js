@@ -6,10 +6,10 @@ const authMiddleware = require('../middlewares/auth/authMiddleware');
 // Public routes
 router.get('/', reviewController.getAllReviews);
 router.get('/:id', reviewController.getReviewById);
+router.post('/', reviewController.createReview);
 
 // Protected routes
 router.use(authMiddleware.protect);
-router.post('/', reviewController.createReview);
 router.patch('/:id', reviewController.updateReview);
 router.delete('/:id', reviewController.deleteReview);
 

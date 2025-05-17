@@ -1,29 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaUser, FaBuilding } from 'react-icons/fa';
 import Navbar from './Navbar';
 
 const ReviewForm = () => {
   const navigate = useNavigate();
   const [agents, setAgents] = useState([]);
   const [selectedAgent, setSelectedAgent] = useState('');
+  const [selectedAgentDetails, setSelectedAgentDetails] = useState(null);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [reviewerName, setReviewerName] = useState('');
   const [hover, setHover] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth();
     fetchAgents();
+    setIsLoading(false);
   }, []);
-
-  const checkAuth = () => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  };
 
   const fetchAgents = async () => {
     try {
@@ -38,6 +34,13 @@ const ReviewForm = () => {
     }
   };
 
+  const handleAgentSelect = (e) => {
+    const agentId = e.target.value;
+    setSelectedAgent(agentId);
+    const agent = agents.find(a => a._id === agentId);
+    setSelectedAgentDetails(agent);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -49,12 +52,10 @@ const ReviewForm = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:8000/api/reviews', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           agent: selectedAgent,
@@ -66,12 +67,13 @@ const ReviewForm = () => {
 
       const data = await response.json();
 
-      if (data.status === 'success') {
+      if (response.ok && data.status === 'success') {
         setSuccess('Review submitted successfully!');
         setRating(0);
         setReviewText('');
         setReviewerName('');
         setSelectedAgent('');
+        setSelectedAgentDetails(null);
         // Redirect to reviews page after 2 seconds
         setTimeout(() => {
           navigate('/reviews');
@@ -85,19 +87,14 @@ const ReviewForm = () => {
     }
   };
 
-  if (!isAuthenticated) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#121212] text-white">
         <Navbar />
         <div className="flex items-center justify-center h-[calc(100vh-80px)]">
           <div className="text-center">
-            <p className="text-xl mb-4">Please log in to write a review</p>
-            <button
-              onClick={() => navigate('/login')}
-              className="bg-[#703BF7] text-white px-6 py-2 rounded-lg hover:bg-[#5f2cc6] transition-colors"
-            >
-              Go to Login
-            </button>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#703BF7] mx-auto mb-4"></div>
+            <p className="text-xl">Loading...</p>
           </div>
         </div>
       </div>
@@ -128,10 +125,22 @@ const ReviewForm = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
+            <label className="block text-gray-300 mb-2">Your Name</label>
+            <input
+              type="text"
+              value={reviewerName}
+              onChange={(e) => setReviewerName(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-[#1a1a1a] border border-[#333] text-white focus:outline-none focus:border-[#703BF7]"
+              placeholder="Enter your name"
+              required
+            />
+          </div>
+
+          <div>
             <label className="block text-gray-300 mb-2">Select Agent</label>
             <select
               value={selectedAgent}
-              onChange={(e) => setSelectedAgent(e.target.value)}
+              onChange={handleAgentSelect}
               className="w-full px-4 py-2 rounded-lg bg-[#1a1a1a] border border-[#333] text-white focus:outline-none focus:border-[#703BF7]"
               required
             >
@@ -144,16 +153,25 @@ const ReviewForm = () => {
             </select>
           </div>
 
-          <div>
-            <label className="block text-gray-300 mb-2">Your Name</label>
-            <input
-              type="text"
-              value={reviewerName}
-              onChange={(e) => setReviewerName(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-[#1a1a1a] border border-[#333] text-white focus:outline-none focus:border-[#703BF7]"
-              required
-            />
-          </div>
+          {selectedAgentDetails && (
+            <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333] mb-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-[#703BF7] p-3 rounded-full">
+                  <FaUser className="text-2xl" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-[#703BF7]">
+                    {selectedAgentDetails.firstName} {selectedAgentDetails.lastName}
+                  </h3>
+                  <p className="text-gray-400">Real Estate Agent</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-gray-300">
+                <FaBuilding className="text-[#703BF7]" />
+                <span>{selectedAgentDetails.properties?.length || 0} Properties Listed</span>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-gray-300 mb-2">Rating</label>
@@ -180,6 +198,7 @@ const ReviewForm = () => {
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
               className="w-full px-4 py-2 rounded-lg bg-[#1a1a1a] border border-[#333] text-white focus:outline-none focus:border-[#703BF7] min-h-[150px]"
+              placeholder="Write your review here..."
               required
             />
           </div>
