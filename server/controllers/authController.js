@@ -57,9 +57,9 @@ module.exports.login = catchAsync(async (req, res, next) => {
   if (!email || !password)
     return next(new AppError('Please provide email and password!', 400));
 
-  // Check if user exists
+  // Check if user exists && password is correct
   const user = await User.findOne({ email }).select('+password +active');
-  if (!user || !(await user.isCorrectPassword(password, user.password))) {
+  if (!user) {
     return next(new AppError('Incorrect email or password!', 401));
   }
 
@@ -81,14 +81,22 @@ module.exports.login = catchAsync(async (req, res, next) => {
   // Create JWT token
   const token = createJWTToken(user);
 
+  // Set JWT cookie
+  res.cookie('jwt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: process.env.JWT_EXPIRES_IN * 24 * 60 * 60 * 1000, // Convert days to milliseconds
+  });
+
   // Remove password from output
   user.password = undefined;
+
   res.status(200).json({
     status: 'success',
     message: 'Logged in successfully!',
     data: {
       user,
-      token,
     },
   });
 });
@@ -206,6 +214,22 @@ module.exports.updatePassword = catchAsync(async (req, res, next) => {
     status: 'successs',
     data: {
       message: 'Password updated successfully!',
+    },
+  });
+});
+
+module.exports.getMe = catchAsync(async (req, res, next) => {
+  // req.user is set by the protect middleware
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user,
     },
   });
 });
