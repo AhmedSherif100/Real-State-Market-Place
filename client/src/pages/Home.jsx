@@ -36,7 +36,6 @@ const HomePage = () => {
         return res.json();
       })
       .then((data) => {
-        console.log('Fetched Properties:', data);
         setProperties(data.data.properties);
         setLoading(false);
       })
