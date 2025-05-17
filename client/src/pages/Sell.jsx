@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Client } from 'appwrite';
+import { v4 } from "uuid";
+import { storage, ID } from '../../appwrite';
 
 const steps = ['Basic Info', 'Address & Area', 'Media & Price', 'Features'];
 
@@ -20,7 +23,7 @@ export default function Sell() {
     country: '',
     sqft: '',
     sqm: '',
-    media: [], // Will store file paths from server
+    media: [],
     buildDate: '',
     price: '',
     status: 'active',
@@ -39,24 +42,85 @@ export default function Sell() {
     wifi: false,
     security: false,
   });
+  const [pendingFiles, setPendingFiles] = useState([]); // Store files locally until submission
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadStatus, setUploadStatus] = useState({});
 
   const inputClass =
     'w-full p-4 bg-[#1a1a1a] text-white placeholder-gray-400 rounded-2xl shadow-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-600';
   const selectClass = inputClass;
   const fileButtonClass =
-    'w-full p-4 bg-gradient-to-r from-purple-700 to-purple-400 text-white rounded-full border-2 border-purple-500 shadow-xl cursor-pointer';
+    'w-full p-4 bg-gradient-to-r from-purple-700 to-purple-400 text-white rounded-full border-2 border-purple-500 shadow-xl cursor-pointer text-center';
   const checkboxClass =
     'h-6 w-6 border-2 border-gray-600 rounded-lg checked:bg-gradient-to-r checked:from-purple-600 checked:to-purple-400';
 
-  const handleChange = async (e) => {
+  const handleChange = (e) => {
     const { name, type, files, value, checked } = e.target;
     if (type === 'checkbox') {
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else if (type === 'file') {
-      //////////////files should be handeled here ya hamada//////////////////
+      if (!files || files.length === 0) {
+        setUploadStatus({ error: 'Please select at least one file.' });
+        return;
+      }
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      const maxSizeInMB = 5;
+      const newFiles = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileId = v4();
+
+        // Check file type
+        if (!allowedTypes.includes(file.type)) {
+          setUploadStatus((prev) => ({
+            ...prev,
+            [fileId]: { error: `File "${file.name}" is not an allowed image type.` },
+          }));
+          continue;
+        }
+
+        // Check file size
+        const fileSizeMB = file.size / (1024 * 1024);
+        if (fileSizeMB > maxSizeInMB) {
+          setUploadStatus((prev) => ({
+            ...prev,
+            [fileId]: { error: `File "${file.name}" exceeds the ${maxSizeInMB}MB limit.` },
+          }));
+          continue;
+        }
+
+        // Generate local preview URL
+        const previewUrl = URL.createObjectURL(file);
+        newFiles.push({ file, previewUrl, fileId });
+      }
+
+      if (newFiles.length > 0) {
+        setPendingFiles((prev) => [...prev, ...newFiles]);
+        setUploadStatus((prev) => ({
+          ...prev,
+          success: `${newFiles.length} file(s) added for upload.`,
+        }));
+      }
+
+      // Clear status after 5 seconds
+      setTimeout(() => {
+        setUploadStatus({});
+      }, 5000);
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  const removePendingFile = (fileId) => {
+    setPendingFiles((prev) => {
+      const fileToRemove = prev.find((f) => f.fileId === fileId);
+      if (fileToRemove) {
+        URL.revokeObjectURL(fileToRemove.previewUrl); // Clean up local URL
+      }
+      return prev.filter((f) => f.fileId !== fileId);
+    });
   };
 
   const next = () =>
@@ -65,6 +129,54 @@ export default function Sell() {
 
   const handleSubmit = async () => {
     const userId = 'null';
+    let uploadedFiles = [];
+
+    // Upload pending files to Appwrite
+    for (const { file, fileId } of pendingFiles) {
+      try {
+        setUploadProgress((prev) => ({ ...prev, [fileId]: 0 }));
+        setUploadStatus((prev) => ({ ...prev, [fileId]: { status: 'uploading' } }));
+
+        const renamedFile = new File([file], `properties/${file.name}_${v4()}`, {
+          type: file.type,
+        });
+        const response = await storage.createFile(
+          '6828c071001e2d182ea9',
+          ID.unique(),
+          renamedFile,
+          undefined,
+          (event) => {
+            const percent = Math.round((event.progress / event.size) * 100);
+            setUploadProgress((prev) => ({ ...prev, [fileId]: percent }));
+          }
+        );
+
+        const previewUrl = storage.getFileView('6828c071001e2d182ea9', response.$id);
+        uploadedFiles.push(previewUrl.href);
+        setUploadStatus((prev) => ({
+          ...prev,
+          [fileId]: { success: `File "${file.name}" uploaded successfully.` },
+        }));
+      } catch (err) {
+        console.error('Upload error:', err);
+        setUploadStatus((prev) => ({
+          ...prev,
+          [fileId]: { error: `Failed to upload file: ${file.name}` },
+        }));
+        return; // Stop submission on upload failure
+      } finally {
+        setTimeout(() => {
+          setUploadProgress((prev) => {
+            const { [fileId]: _, ...rest } = prev;
+            return rest;
+          });
+          setUploadStatus((prev) => {
+            const { [fileId]: _, ...rest } = prev;
+            return rest;
+          });
+        }, 5000);
+      }
+    }
 
     const payload = {
       title: formData.title,
@@ -82,7 +194,7 @@ export default function Sell() {
         sqft: Number(formData.sqft) || 0,
         sqm: Number(formData.sqm) || 0,
       },
-      media: formData.media,
+      media: uploadedFiles,
       buildDate: formData.buildDate,
       price: Number(formData.price) || 0,
       status: formData.status,
@@ -107,16 +219,18 @@ export default function Sell() {
 
     try {
       console.log('Submitting payload:', JSON.stringify(payload, null, 2));
-      //upload images//
-      alert('Property successfully listed!');
-      navigate('/buy');
+      setUploadStatus({ success: 'Property successfully listed!' });
+      setPendingFiles([]); // Clear pending files
+      setTimeout(() => {
+        navigate('/buy');
+      }, 2000);
     } catch (err) {
       console.error('Submission error:', err.response?.data || err.message);
-      alert(
-        `Error ${err.response?.status || 'Unknown'}: ${
+      setUploadStatus({
+        error: `Error ${err.response?.status || 'Unknown'}: ${
           err.response?.data?.message || err.message
-        }`
-      );
+        }`,
+      });
     }
   };
 
@@ -233,20 +347,84 @@ export default function Sell() {
                 name="media"
                 type="file"
                 multiple
-                accept="image/jpeg,image/png"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleChange}
               />
-              {formData.media.length > 0 && (
-                <div className="mt-4">
-                  <p>Uploaded files:</p>
-                  <ul className="list-disc pl-5">
-                    {formData.media.map((path, idx) => (
-                      <li key={idx}>{path}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
+            {Object.keys(uploadStatus).length > 0 && (
+              <div className="space-y-2">
+                {Object.entries(uploadStatus).map(([key, status]) => (
+                  <div
+                    key={key}
+                    className={`p-3 rounded-lg flex items-center gap-2 ${
+                      status.success
+                        ? 'bg-green-900/50 border border-green-500'
+                        : status.error
+                        ? 'bg-red-900/50 border border-red-500'
+                        : 'bg-gray-900/50 border border-gray-500'
+                    }`}
+                  >
+                    {status.success ? (
+                      <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : status.error ? (
+                      <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                    )}
+                    <span className="text-sm">
+                      {status.success || status.error || 'Uploading...'}
+                    </span>
+                    {uploadProgress[key] !== undefined && (
+                      <div className="ml-auto w-24 h-2 bg-gray-700 rounded-full">
+                        <div
+                          className="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress[key]}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {pendingFiles.length > 0 && (
+              <div className="mt-4">
+                <p className="text-lg font-semibold mb-2">Selected Images:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {pendingFiles.map(({ previewUrl, fileId, file }, idx) => (
+                    <div key={fileId} className="relative group">
+                      <img
+                        src={previewUrl}
+                        alt={`Preview ${file.name}`}
+                        className="w-full h-32 object-cover rounded-lg border border-gray-700"
+                        onError={(e) => {
+                          e.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAEBgIJ6s3Y2QAAAABJRU5ErkJggg=='; // Fallback placeholder
+                        }}
+                      />
+                      <button
+                        onClick={() => removePendingFile(fileId)}
+                        className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove image"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <input
               className={inputClass}
               name="buildDate"
