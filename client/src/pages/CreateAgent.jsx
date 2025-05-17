@@ -12,7 +12,6 @@ const CreateAgent = () => {
     lastName: '',
     email: '',
     password: '',
-    confirmPassword: '',
     contactEmail: '',
     phoneNumber: '',
     yearsOfExperience: 0,
@@ -36,27 +35,30 @@ const CreateAgent = () => {
     setLoading(true);
     setError('');
 
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
-    // Remove confirmPassword before sending to server
-    const { confirmPassword, ...dataToSend } = formData;
-
     try {
-      const response = await axios.post('http://localhost:8000/api/agents', dataToSend);
-      console.log('Server response:', response.data);
+      const agentPayload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        contactEmail: formData.contactEmail || formData.email,
+        phoneNumber: formData.phoneNumber,
+        yearsOfExperience: formData.yearsOfExperience,
+        age: formData.age,
+        totalSales: formData.totalSales,
+        about: formData.about,
+        user: formData.email
+      };
 
+      const response = await axios.post('http://localhost:8000/api/agents', agentPayload);
+      
       if (response.data.status === 'success') {
-        navigate('/agents');
+        navigate('/agent');
       } else {
         setError(response.data.message || 'Failed to create agent');
       }
     } catch (err) {
-      console.error('Error creating agent:', err);
+      console.error('Error:', err);
       console.error('Error response:', err.response?.data);
       
       if (err.response?.data?.message) {
@@ -64,7 +66,7 @@ const CreateAgent = () => {
       } else if (err.response?.data?.error) {
         setError(err.response.data.error);
       } else {
-        setError('An error occurred while creating the agent. Please try again.');
+        setError('An error occurred. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -146,20 +148,6 @@ const CreateAgent = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Confirm Password *</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  minLength={6}
-                  className="w-full px-4 py-2 bg-[#252525] rounded-lg focus:ring-2 focus:ring-[#703BF7] outline-none"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
                 <label className="block text-sm font-medium mb-2">Phone Number *</label>
                 <input
                   type="tel"
@@ -172,6 +160,8 @@ const CreateAgent = () => {
                   className="w-full px-4 py-2 bg-[#252525] rounded-lg focus:ring-2 focus:ring-[#703BF7] outline-none"
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Age *</label>
                 <input
@@ -185,13 +175,6 @@ const CreateAgent = () => {
                   className="w-full px-4 py-2 bg-[#252525] rounded-lg focus:ring-2 focus:ring-[#703BF7] outline-none"
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Professional Info */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-[#703BF7]">Professional Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Years of Experience *</label>
                 <input
@@ -205,6 +188,13 @@ const CreateAgent = () => {
                   className="w-full px-4 py-2 bg-[#252525] rounded-lg focus:ring-2 focus:ring-[#703BF7] outline-none"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Professional Info */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-[#703BF7]">Professional Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Total Sales</label>
                 <input

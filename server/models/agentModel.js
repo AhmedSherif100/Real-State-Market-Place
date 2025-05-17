@@ -14,20 +14,18 @@ const agentSchema = new Schema(
     yearsOfExperience: { type: Number, required: true },
     age: { type: Number, required: true },
     about: { type: String },
-    user: { type: String }, // Optional user reference
+    user: { type: String }, 
     status: { enum: ['active', 'inactive'], type: String, default: 'active' }
   },
   { timestamps: true }
 );
 
-// Hash password before saving
 agentSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-// Method to check password
 agentSchema.methods.isCorrectPassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };

@@ -30,8 +30,7 @@ const Agent = () => {
     }
   };
 
-  // Client-side filtering
-  useEffect(() => {
+  const applyFilters = () => {
     if (searchTerm.trim() === '' && !filters.minExperience && !filters.minSales) {
       setFilteredAgents(agents);
       return;
@@ -66,12 +65,13 @@ const Agent = () => {
     });
 
     setFilteredAgents(filtered);
-  }, [searchTerm, filters, agents]);
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
     setLoading(true);
-    fetchAgents();
+    applyFilters();
+    setLoading(false);
   };
 
   const handleFilterChange = (e) => {

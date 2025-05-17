@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from 'react';
 import { AuthProvider } from './context/AuthContext';
 import AdminLayout from './components/admin/Layout';
 import Dashboard from './pages/admin/Dashboard';
@@ -17,6 +18,10 @@ import PropertyDetail from './pages/PropertyDetail';
 import Agent from './pages/Agent';
 import BecomeAgent from './pages/BecomeAgent';
 import CreateAgent from './pages/CreateAgent';
+import ManageAgents from './pages/ManageAgents';
+import Profile from './pages/Profile';
+import Reviews from './pages/Reviews';
+import ReviewForm from './components/ReviewForm';
 
 const App = () => {
   return (
@@ -29,7 +34,6 @@ const App = () => {
           <Route path="properties" element={<Properties />} />
           <Route path="settings" element={<Settings />} />
         </Route>
-
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
@@ -44,6 +48,9 @@ const App = () => {
         <Route path="/create-agent" element={<CreateAgent />} />
         <Route path="/property/:id" element={<PropertyDetail />} />
         <Route path="*" element={<div>404 Not Found</div>} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/reviews" element={<Reviews />} />
+        <Route path="/write-review" element={<ReviewForm />} />
       </Routes>
     </AuthProvider>
   );

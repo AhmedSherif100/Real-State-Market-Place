@@ -18,16 +18,41 @@ const ForgetPassword = () => {
     setMessage('');
 
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/forget-password', { email });
+      // First verify if the email exists using the login endpoint
+      const loginResponse = await axios.post('http://localhost:8000/api/auth/login', {
+        email: email.trim(),
+        password: 'dummy' // We don't care about the password, we just want to check if email exists
+      });
 
-      if (response.data.exists) {
-        navigate('/reset-password', { state: { email } });
-      } else {
-        setMessage('Email not found. Please try again.');
+      // If we get here, the email exists (login endpoint would have thrown 401 if email didn't exist)
+      // Now proceed with password reset
+      const resetResponse = await axios.post('http://localhost:8000/api/auth/forget-password', { email });
+
+      if (resetResponse.data.status === 'success') {
+        setMessage('Password reset link has been sent to your email.');
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
       }
     } catch (error) {
-      console.error('Email validation error:', error);
-      setMessage('Server error. Try again later.');
+      if (error.response?.status === 401) {
+        
+        try {
+          const resetResponse = await axios.post('http://localhost:8000/api/auth/forget-password', { email });
+          if (resetResponse.data.status === 'success') {
+            setMessage('Password reset link has been sent to your email.');
+            setTimeout(() => {
+              navigate('/login');
+            }, 3000);
+          }
+        } catch (resetError) {
+          setMessage(resetError.response?.data?.message || 'Failed to send reset link. Please try again.');
+        }
+      } else if (error.response?.status === 404) {
+        setMessage('Email not found. Please check your email address.');
+      } else {
+        setMessage(error.response?.data?.message || 'An error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -60,7 +85,7 @@ const ForgetPassword = () => {
 
         <div className="text-center text-sm text-gray-400 mt-4">
           <button
-            onClick={() => navigate('/register')}
+            onClick={() => navigate('/login')}
             className="text-purple-400 underline hover:text-purple-300 transition"
           >
             Return to Login

@@ -57,10 +57,17 @@ module.exports.login = catchAsync(async (req, res, next) => {
   if (!email || !password)
     return next(new AppError('Please provide email and password!', 400));
 
-  // Check if user exists && password is correct
+  // Check if user exists
   const user = await User.findOne({ email }).select('+password +active');
   if (!user || !(await user.isCorrectPassword(password, user.password)))
     return next(new AppError('Incorrect email or password!', 401));
+  }
+
+  // Check if password is correct
+  const isPasswordCorrect = await user.isCorrectPassword(password, user.password);
+  if (!isPasswordCorrect) {
+    return next(new AppError('Incorrect email or password!', 401));
+  }
 
   // Check if the user's account is active
   if (!user.active)
@@ -73,7 +80,6 @@ module.exports.login = catchAsync(async (req, res, next) => {
 
   // Remove password from output
   user.password = undefined;
-
   res.status(200).json({
     status: 'success',
     message: 'Logged in successfully!',
