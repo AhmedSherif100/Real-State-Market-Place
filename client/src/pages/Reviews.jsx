@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaUser, FaBuilding } from 'react-icons/fa';
 import Navbar from '../components/Navbar';
 
 const Reviews = () => {
@@ -96,13 +96,34 @@ const Reviews = () => {
                 key={review._id}
                 className="bg-[#1a1a1a] rounded-lg p-8 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border border-[#333] hover:border-[#703BF7]"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-[#703BF7]">{review.reviewerName}</h3>
-                  <div className="flex gap-1">{renderStars(review.rating)}</div>
+                {/* Agent Section */}
+                <div className="mb-6 pb-6 border-b border-[#333]">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-[#703BF7] p-2 rounded-full">
+                      <FaUser className="text-xl" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-[#703BF7]">
+                        {review.agent.firstName} {review.agent.lastName}
+                      </h3>
+                      <p className="text-sm text-gray-400">Real Estate Agent</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-300 mb-6 text-center italic">"{review.reviewText}"</p>
-                <div className="text-sm text-gray-400 text-center">
-                  {new Date(review.createdAt).toLocaleDateString()}
+
+                {/* Review Content */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <FaUser className="text-[#703BF7]" />
+                      <span className="text-gray-300">{review.reviewerName}</span>
+                    </div>
+                    <div className="flex gap-1">{renderStars(review.rating)}</div>
+                  </div>
+                  <p className="text-gray-300 text-center italic mb-4">"{review.reviewText}"</p>
+                  <div className="text-sm text-gray-400 text-right">
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </div>
                 </div>
               </div>
             ))}

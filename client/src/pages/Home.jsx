@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FiSearch } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import FeaturedProperties from '../components/FeaturedProperties';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaUser } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const HomePage = () => {
@@ -179,40 +179,69 @@ const HomePage = () => {
               reviews.map((review) => (
                 <div
                   key={review._id}
-                  className="bg-[#1a1a1a] p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                  className="bg-[#1a1a1a] rounded-lg p-8 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border border-[#333] hover:border-[#703BF7]"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold">{review.reviewerName}</h3>
-                    <div className="flex gap-1">
-                      {[...Array(5)].map((_, index) => (
-                        <FaStar
-                          key={index}
-                          className="text-xl"
-                          color={index < review.rating ? '#FFD700' : '#4B5563'}
-                        />
-                      ))}
+                  {/* Agent Section */}
+                  <div className="mb-6 pb-6 border-b border-[#333]">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="bg-[#703BF7] p-2 rounded-full">
+                        <FaUser className="text-xl" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-[#703BF7]">
+                          {review.agent.firstName} {review.agent.lastName}
+                        </h3>
+                        <p className="text-sm text-gray-400">Real Estate Agent</p>
+                      </div>
                     </div>
                   </div>
-                  <p className="text-gray-300 mb-4">{review.reviewText}</p>
-                  <div className="text-sm text-gray-400">
-                    {new Date(review.createdAt).toLocaleDateString()}
+
+                  {/* Review Content */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <FaUser className="text-[#703BF7]" />
+                        <span className="text-gray-300">{review.reviewerName}</span>
+                      </div>
+                      <div className="flex gap-1">
+                        {[...Array(5)].map((_, index) => (
+                          <FaStar
+                            key={index}
+                            className="text-xl"
+                            color={index < review.rating ? '#FFD700' : '#4B5563'}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-center italic mb-4">"{review.reviewText}"</p>
+                    <div className="text-sm text-gray-400 text-right">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </div>
                   </div>
                 </div>
               ))
             ) : (
               <div className="col-span-3 text-center text-gray-400">
                 <p className="text-xl">No reviews yet. Be the first to write one!</p>
+                <Link
+                  to="/write-review"
+                  className="inline-block mt-4 bg-gradient-to-r from-[#703BF7] to-[#5f2cc6] text-white px-6 py-2 rounded-lg hover:from-[#5f2cc6] hover:to-[#703BF7] transition-all duration-300"
+                >
+                  Write a Review
+                </Link>
               </div>
             )}
           </div>
-          <div className="text-center mt-8">
-            <Link
-              to="/reviews"
-              className="inline-block bg-[#703BF7] text-white px-6 py-2 rounded-lg hover:bg-[#5f2cc6] transition-colors"
-            >
-              View All Reviews
-            </Link>
-          </div>
+          {reviews.length > 0 && (
+            <div className="text-center mt-12">
+              <Link
+                to="/reviews"
+                className="inline-block bg-gradient-to-r from-[#703BF7] to-[#5f2cc6] text-white px-8 py-3 rounded-lg hover:from-[#5f2cc6] hover:to-[#703BF7] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                View All Reviews
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

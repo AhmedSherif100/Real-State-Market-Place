@@ -25,16 +25,33 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMessage('');
+
     try {
+      console.log('Submitting registration form with data:', formData);
       const response = await registerService(formData);
       // The token is now in an HTTP-only cookie
       login(response.data.user);
       setSuccess(true);
       setMessage('Registration successful! Redirecting...');
       setTimeout(() => navigate('/'), 2000);
+      console.log('Registration response:', response);
+
+      if (response.status === 'success') {
+        // Update auth context with user data
+        login(response.data.user, response.data.token);
+        
+        setSuccess(true);
+        setMessage('Registration successful! Redirecting...');
+        
+        setTimeout(() => navigate('/profile'), 2000);
+      } else {
+        throw new Error(response.message || 'Registration failed');
+      }
     } catch (error) {
+      console.error('Registration error:', error);
       setSuccess(false);
-      setMessage(error.response?.data?.message || 'Something went wrong.');
+      setMessage(error.response?.data?.message || error.message || 'Something went wrong.');
     } finally {
       setLoading(false);
     }
