@@ -39,13 +39,7 @@ const Navbar = () => {
             Find an Agent
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
           </li>
-          <li
-            onClick={() => navigate('/notifications')}
-            className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
-          >
-            Notifications
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
-          </li>
+         
         </ul>
 
         {/* Centered Logo */}
@@ -58,25 +52,32 @@ const Navbar = () => {
 
         {/* Right Nav Links */}
         <ul className="flex gap-6 items-center text-sm font-semibold">
-          {(userRole === 'agent' || userRole === 'admin') && (
-            <li
-              onClick={() => navigate('/manage-properties')}
-              className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
-            >
-              Manage Properties
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
-            </li>
-          )}
-          <li
-            onClick={() => navigate('/about')}
+          {/* <li
+            onClick={() => navigate('/manage-properties')}
             className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
           >
-            About Us
+            Manage Properties
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
-          </li>
+          </li> */}
+          
           {!isLoggedIn ? (
             <>
+              
               <li
+                onClick={() => navigate('/bagent')}
+                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+              >
+                Become an Agent
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
+              </li>
+              <li
+            onClick={() => navigate('/notifications')}
+            className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
+          >
+            Notifications
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
+          </li>
+          <li
                 onClick={() => navigate('/login')}
                 className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
               >
@@ -89,13 +90,6 @@ const Navbar = () => {
               >
                 Sign Up
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#fff] transition-all duration-300 group-hover:w-full"></span>
-              </li>
-              <li
-                onClick={() => navigate('/bagent')}
-                className="relative px-3 py-2 transition-all duration-300 hover:text-[#703BF7] cursor-pointer group"
-              >
-                Become an Agent
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#703BF7] transition-all duration-300 group-hover:w-full"></span>
               </li>
             </>
           ) : (

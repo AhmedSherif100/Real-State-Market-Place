@@ -19,6 +19,7 @@ import Agnet from './pages/Agent';
 import BecomeAgent from './pages/BecomeAgent';
 import Agent from './pages/Agent';
 import CreateAgent from './pages/CreateAgent';
+import ManageAgents from './pages/ManageAgents';
 
 
 
@@ -37,6 +38,7 @@ const App = () => {
         <Route path="/login" element={<Login/>} />
         <Route path="/manage-properties" element={<ManageProperties />} />
         <Route path="/manage-users" element={<ManageUsers />} />
+        <Route path="/manage-agents" element={<ManageAgents />} />
         <Route path="/rent" element={<Rent />} />
         <Route path="/buy" element={<Buy />} />
         <Route path="/sell" element={<Sell />} />

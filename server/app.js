@@ -13,6 +13,7 @@ const AppError = require('./utils/appError');
 const authRouter = require('./routes/authRoutes');
 const propertyRouter = require('./routes/propertyRouter');
 const agentRoutes = require('./routes/agentRoutes');
+const userRoutes = require('./routes/userRoutes');
 // Start Express app
 const app = express();
 
@@ -33,6 +34,7 @@ if (process.env.NODE_ENV == 'development') app.use(morgan('dev'));
 app.use('/api/properties/', propertyRouter);
 app.use('/api/auth/', authRouter);
 app.use('/api/agents', agentRoutes);
+app.use('/api/users', userRoutes);
 // Catch-all for 404
 app.all('*', (req, res, next) => {
   next(new AppError(`Couldn't find ${req.originalUrl} on this server!`, 404));

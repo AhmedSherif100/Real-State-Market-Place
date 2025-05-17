@@ -30,8 +30,10 @@ const createJWTToken = (user, res) => {
 module.exports.register = catchAsync(async (req, res, next) => {
   // Add instance of a new user to database
   const newUser = await User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
+    name: {
+      first: req.body.firstName,
+      last: req.body.lastName
+    },
     email: req.body.email,
     password: req.body.password,
   });
@@ -55,10 +57,17 @@ module.exports.login = catchAsync(async (req, res, next) => {
   if (!email || !password)
     return next(new AppError('Please provide email and password!', 400));
 
-  // Check if user exists && password is correct
+  // Check if user exists
   const user = await User.findOne({ email }).select('+password +active');
-  if (!user || !user.isCorrectPassword(password, user.password))
+  if (!user) {
     return next(new AppError('Incorrect email or password!', 401));
+  }
+
+  // Check if password is correct
+  const isPasswordCorrect = await user.isCorrectPassword(password, user.password);
+  if (!isPasswordCorrect) {
+    return next(new AppError('Incorrect email or password!', 401));
+  }
 
   // Check if the user's account is active
   if (!user.active)
@@ -69,12 +78,19 @@ module.exports.login = catchAsync(async (req, res, next) => {
   // Send JWT token if validation passed
   const token = createJWTToken(user, res);
 
-  res.status(201).json({
+  res.status(200).json({
     status: 'success',
     token,
     data: {
-      message: 'Logged in successfully!',
-    },
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        firstName: user.name.first,
+        lastName: user.name.last
+      },
+      message: 'Logged in successfully!'
+    }
   });
 });
 
