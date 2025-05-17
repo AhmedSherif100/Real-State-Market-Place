@@ -20,6 +20,8 @@ const createJWTToken = (user) => {
 
 module.exports.register = catchAsync(async (req, res, next) => {
   try {
+    console.log('Registration request body:', req.body);
+    
     // Add instance of a new user to database
     const newUser = await User.create({
       firstName: req.body.firstName,
@@ -27,6 +29,8 @@ module.exports.register = catchAsync(async (req, res, next) => {
       email: req.body.email,
       password: req.body.password,
     });
+
+    console.log('Created user:', newUser);
 
     // Create a JWT token
     const token = createJWTToken(newUser);
@@ -43,6 +47,7 @@ module.exports.register = catchAsync(async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error('Registration error:', error);
     if (error.name === 'ValidationError') {
       return next(new AppError(error.message, 400));
     }
