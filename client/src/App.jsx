@@ -1,14 +1,16 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { AuthProvider } from './context/AuthContext';
+import AdminLayout from './components/admin/Layout';
+import Dashboard from './pages/admin/Dashboard';
+import Users from './pages/admin/Users';
+import Properties from './pages/admin/Properties';
+import Settings from './pages/admin/Settings';
 import { Home } from './pages';
 import Register from './components/Register';
 import Login from './components/Login';
 import ForgetPassword from './components/ForgetPassword';
 import ResetPassword from './components/ResetPassword';
-import Dashboard from './pages/Dashboard';
-import ManageProperties from './pages/ManageProperties';
-import ManageUsers from './pages/ManageUsers';
-import Properties from './pages/Properties';
 import Rent from './pages/Rent';
 import Buy from './pages/Buy';
 import Sell from './pages/Sell';
@@ -23,30 +25,34 @@ import ReviewForm from './components/ReviewForm';
 
 const App = () => {
   return (
-    <div className="relative min-h-screen bg-base-100 transition-colors duration-300">
+    <AuthProvider>
       <Routes>
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="users" element={<Users />} />
+          <Route path="properties" element={<Properties />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/register" element={<Register/>} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/manage-properties" element={<ManageProperties />} />
-        <Route path="/manage-users" element={<ManageUsers />} />
-        <Route path="/manage-agents" element={<ManageAgents />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/rent" element={<Rent />} />
         <Route path="/buy" element={<Buy />} />
         <Route path="/sell" element={<Sell />} />
-        <Route path="/agent" element={<Agent/>} />
+        <Route path="/agent" element={<Agent />} />
         <Route path="/bagent" element={<BecomeAgent />} />
         <Route path="/create-agent" element={<CreateAgent />} />
         <Route path="/property/:id" element={<PropertyDetail />} />
+        <Route path="*" element={<div>404 Not Found</div>} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/write-review" element={<ReviewForm />} />
       </Routes>
-    </div>
+    </AuthProvider>
   );
 };
 

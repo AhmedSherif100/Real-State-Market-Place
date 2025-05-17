@@ -14,12 +14,11 @@ const AppError = require('./utils/appError');
 const authRoutes = require('./routes/authRoutes');
 const propertyRouter = require('./routes/propertyRouter');
 const agentRoutes = require('./routes/agentRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');
 const reviewRoutes = require('./routes/reviewRouter');
-
 // Load env vars
 dotenv.config({ path: './config.env' });
-
 // Start Express app
 const app = express();
 
@@ -40,9 +39,9 @@ if (process.env.NODE_ENV == 'development') app.use(morgan('dev'));
 app.use('/api/properties/', propertyRouter);
 app.use('/api/auth/', authRoutes);
 app.use('/api/agents', agentRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/reviews', reviewRoutes);
-
 // Catch-all for 404
 app.all('*', (req, res, next) => {
   next(new AppError(`Couldn't find ${req.originalUrl} on this server!`, 404));

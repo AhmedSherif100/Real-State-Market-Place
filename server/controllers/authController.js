@@ -12,42 +12,42 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const Email = require('../utils/email');
 
-const createJWTToken = (user, res) => {
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+const createJWTToken = (user) => {
+  return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN * 24 * 60 * 60,
   });
-
-  res.cookie('jwt', token, {
-    expires: new Date(
-      Date.now() + process.env.JWT_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-  });
-
-  return token;
 };
 
 module.exports.register = catchAsync(async (req, res, next) => {
-  // Add instance of a new user to database
-  const newUser = await User.create({
-    name: {
-      first: req.body.firstName,
-      last: req.body.lastName
-    },
-    email: req.body.email,
-    password: req.body.password,
-  });
+  try {
+    // Add instance of a new user to database
+    const newUser = await User.create({
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      email: req.body.email,
+      password: req.body.password,
+    });
 
-  // Create a JWT token to login the user
-  const token = createJWTToken(newUser, res);
+    // Create a JWT token
+    const token = createJWTToken(newUser);
 
-  // Redirect user to homepage
-  res.status(201).json({
-    status: 'success',
-    data: {
+    // Remove password from output
+    newUser.password = undefined;
+
+    res.status(201).json({
+      status: 'success',
       message: 'User created successfully!',
-    },
-  });
+      data: {
+        user: newUser,
+        token,
+      },
+    });
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      return next(new AppError(error.message, 400));
+    }
+    next(error);
+  }
 });
 
 module.exports.login = catchAsync(async (req, res, next) => {
@@ -59,7 +59,7 @@ module.exports.login = catchAsync(async (req, res, next) => {
 
   // Check if user exists
   const user = await User.findOne({ email }).select('+password +active');
-  if (!user) {
+  if (!user || !(await user.isCorrectPassword(password, user.password)))
     return next(new AppError('Incorrect email or password!', 401));
   }
 
@@ -75,38 +75,25 @@ module.exports.login = catchAsync(async (req, res, next) => {
       new AppError('Your account is deactivated. Please contact support.', 401)
     );
 
-  // Send JWT token if validation passed
-  const token = createJWTToken(user, res);
+  // Create JWT token
+  const token = createJWTToken(user);
 
+  // Remove password from output
+  user.password = undefined;
   res.status(200).json({
     status: 'success',
-    token,
+    message: 'Logged in successfully!',
     data: {
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-        firstName: user.name.first,
-        lastName: user.name.last
-      },
-      message: 'Logged in successfully!'
-    }
+      user,
+      token,
+    },
   });
 });
 
 module.exports.logout = catchAsync(async (req, res) => {
-  res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  });
-
   res.status(200).json({
     status: 'success',
-    data: {
-      message: 'Logged out successfully!',
-    },
+    message: 'Logged out successfully!',
   });
 });
 
@@ -189,7 +176,7 @@ module.exports.resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // Login the user
-  const jwt = createJWTToken(user, res);
+  const jwt = createJWTToken(user);
 
   res.status(201).json({
     status: 'success',
@@ -209,7 +196,7 @@ module.exports.updatePassword = catchAsync(async (req, res, next) => {
   user.confirmPassword = req.body.confirmPassword;
   await user.save();
 
-  const token = createJWTToken(user, res);
+  const token = createJWTToken(user);
 
   // Respond with success to the frontend
   res.status(200).json({

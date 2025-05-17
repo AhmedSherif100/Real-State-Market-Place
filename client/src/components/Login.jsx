@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { login as loginService } from '../services/authService';
 import Navbar from '../components/Navbar';
 
 function Login() {
   const navigate = useNavigate();
-
+  const { login } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,42 +19,13 @@ function Login() {
     e.preventDefault();
     setLoading(true);
     setError('');
-
-    // Basic validation
-    if (!formData.email || !formData.password) {
-      setError('Please enter both email and password');
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Send plain password to backend for hashing and comparison
-      const response = await axios.post('http://localhost:8000/api/auth/login', {
-        email: formData.email.trim(),
-        password: formData.password // Send plain password, backend will handle hashing
-      });
-
-      if (response.data?.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-
-      if (response.data?.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
-
-      console.log('Login successful:', response.data);
+      const response = await loginService(formData.email, formData.password);
+      login(response.data.user, response.data.token);
       navigate('/');
     } catch (err) {
       console.error('Login failed:', err);
-      if (err.response?.status === 401) {
-        setError('Invalid email or password');
-      } else if (err.response?.status === 404) {
-        setError('User not found');
-      } else if (err.response?.status === 400) {
-        setError(err.response.data.message || 'Invalid credentials');
-      } else {
-        setError('An error occurred during login. Please try again.');
-      }
+      setError(err.response?.data?.message || 'Invalid email or password.');
     } finally {
       setLoading(false);
     }
@@ -62,94 +34,71 @@ function Login() {
   return (
     <div className="bg-[#121212] text-white min-h-screen">
       <Navbar />
-      <div className="relative min-h-screen">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-          style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2073&q=80')"
-          }}
-        />
-        
-        {/* Content */}
-        <section className="relative flex items-center justify-center py-24 px-6 md:px-16">
-          <div className="w-full max-w-md bg-[#1a1a1a] rounded-xl p-8 shadow-lg transform transition-all duration-500 hover:shadow-2xl hover:shadow-[#703BF7]/20">
-            <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff]">
-              Login to Your Account
-            </h2>
+      <section className="flex items-center justify-center py-24 px-6 md:px-16">
+        <div className="w-full max-w-md bg-[#1a1a1a] rounded-xl p-8 shadow-lg">
+          <h2 className="text-3xl font-bold mb-6 text-center">Login to Your Account</h2>
 
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4">
-                <p className="text-red-500 text-sm text-center">{error}</p>
-              </div>
-            )}
+          {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-[#703BF7] transition-all duration-300"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-[#703BF7] transition-all duration-300"
-                  placeholder="Enter your password"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full bg-gradient-to-r from-[#703BF7] to-[#5f2cc6] px-4 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-[#703BF7]/30 ${
-                  loading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Logging in...
-                  </div>
-                ) : (
-                  'Login'
-                )}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-400">
-                Don't have an account?{' '}
-                <Link
-                  to="/register"
-                  className="text-[#703BF7] hover:text-[#5f2cc6] font-medium transition-colors duration-300"
-                >
-                  Sign up here
-                </Link>
-              </p>
-              <Link
-                to="/forget-password"
-                className="text-sm text-gray-400 hover:text-[#703BF7] transition-colors duration-300 mt-2 inline-block"
-              >
-                Forgot your password?
-              </Link>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input
+                type="email"
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-lg bg-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-[#703BF7]"
+              />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <input
+                type="password"
+                name="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-lg bg-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-[#703BF7]"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full bg-gradient-to-r from-[#703BF7] to-[#5f2cc6] px-4 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+
+          <div className="mt-6 space-y-4">
+            <p className="text-sm text-center text-gray-400">
+              Don't have an account?{' '}
+              <button
+                onClick={() => navigate('/register')}
+                className="text-[#703BF7] hover:underline"
+              >
+                Sign up here
+              </button>
+            </p>
+            <p className="text-sm text-center text-gray-400">
+              Forgot your password?{' '}
+              <button
+                onClick={() => navigate('/forget-password')}
+                className="text-[#703BF7] hover:underline"
+              >
+                Reset it here
+              </button>
+            </p>
           </div>
-        </section>
-      </div>
-      <footer className="relative bg-[#1a1a1a] py-6 text-center text-gray-400">
+        </div>
+      </section>
+      <footer className="bg-[#1a1a1a] py-6 text-center text-gray-400">
         <p>© 2025 Tamalk. All Rights Reserved.</p>
       </footer>
     </div>

@@ -1,30 +1,41 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const validator = require('validator');
 const config = require('../config');
 
 const { model, Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    name: {
-      first: { type: String },
-      last: { type: String },
-    },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: {
       type: String,
       required: function () {
         return this.authType === 'local';
       },
+      validate: {
+        validator: function (v) {
+          return validator.isStrongPassword(v, {
+            minLength: 8,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1,
+          });
+        },
+        message:
+          'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+      },
     },
     authType: { type: String, default: 'local' },
-
     profilePicture: { type: String, default: '' },
     role: {
       type: String,
       enum: ['buyer', 'seller', 'agent', 'admin'],
-      default: `buyer`,
+      default: 'buyer',
     },
     phoneNumber: { type: String },
     whatsapp: { type: String },

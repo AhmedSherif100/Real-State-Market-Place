@@ -1,13 +1,17 @@
 const express = require('express');
-const userController = require('../controllers/userController');
-const { protect } = require('../middlewares/auth/authMiddleware');
-
 const router = express.Router();
+const authMiddleware = require('../middlewares/auth/authMiddleware');
+const User = require('../models/userModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const userController = require('../controllers/userController');
 
-// Protected routes
-router.use(protect);
+router.use(authMiddleware.protect);
 
-// Get user by email
-router.get('/email/:email', userController.getUserByEmail);
+// Get current user
+router.get('/me', userController.getMe);
 
-module.exports = router; 
+// Get user by ID
+router.get('/:id', userController.getUserByID);
+
+module.exports = router;
