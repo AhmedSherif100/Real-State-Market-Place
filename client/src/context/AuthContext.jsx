@@ -43,9 +43,13 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await loginService(email, password);
-      // The token is now in an HTTP-only cookie
-      setUser(response.data.user);
-      return response;
+      
+      if (response.data && response.data.data && response.data.data.user) {
+        setUser(response.data.data.user);
+        return response;
+      } else {
+        throw new Error('Invalid response format from server');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
       throw err;
@@ -74,6 +78,7 @@ export const AuthProvider = ({ children }) => {
     error,
     login,
     logout,
+    setUser,
     isAuthenticated: !!user,
   };
 

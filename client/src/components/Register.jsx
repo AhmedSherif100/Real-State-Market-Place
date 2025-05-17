@@ -6,7 +6,7 @@ import Navbar from '../components/Navbar';
 
 function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { setUser } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -28,28 +28,17 @@ function Register() {
     setMessage('');
 
     try {
-      console.log('Submitting registration form with data:', formData);
       const response = await registerService(formData);
-      // The token is now in an HTTP-only cookie
-      login(response.data.user);
-      setSuccess(true);
-      setMessage('Registration successful! Redirecting...');
-      setTimeout(() => navigate('/'), 2000);
-      console.log('Registration response:', response);
-
-      if (response.status === 'success') {
-        // Update auth context with user data
-        login(response.data.user, response.data.token);
-        
-        setSuccess(true);
-        setMessage('Registration successful! Redirecting...');
-        
-        setTimeout(() => navigate('/profile'), 2000);
+      
+      if (response.data && response.data.user) {
+        // Set user in context immediately
+        setUser(response.data.user);
+        // Redirect immediately
+        navigate('/');
       } else {
-        throw new Error(response.message || 'Registration failed');
+        throw new Error('Invalid response format from server');
       }
     } catch (error) {
-      console.error('Registration error:', error);
       setSuccess(false);
       setMessage(error.response?.data?.message || error.message || 'Something went wrong.');
     } finally {

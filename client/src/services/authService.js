@@ -12,16 +12,24 @@ const api = axios.create({
 });
 
 export const login = async (email, password) => {
-  const response = await api.post('/auth/login', {
-    email,
-    password,
-  });
-  return response.data;
+  try {
+    const response = await api.post('/auth/login', {
+      email: email.trim(),
+      password: password,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const register = async (userData) => {
-  const response = await api.post('/auth/register', userData);
-  return response.data;
+  try {
+    const response = await api.post('/auth/register', userData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const logout = async () => {
@@ -38,7 +46,6 @@ export const getCurrentUser = async () => {
       // User is not authenticated
       return null;
     }
-    console.error('Error getting user data:', error);
     throw error;
   }
 };

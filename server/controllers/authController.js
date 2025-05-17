@@ -21,7 +21,7 @@ const createJWTToken = (user) => {
 module.exports.register = catchAsync(async (req, res, next) => {
   try {
     console.log('Registration request body:', req.body);
-    
+
     // Add instance of a new user to database
     const newUser = await User.create({
       firstName: req.body.firstName,
@@ -35,6 +35,14 @@ module.exports.register = catchAsync(async (req, res, next) => {
     // Create a JWT token
     const token = createJWTToken(newUser);
 
+    // Set JWT cookie
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: process.env.JWT_EXPIRES_IN * 24 * 60 * 60 * 1000, // Convert days to milliseconds
+    });
+
     // Remove password from output
     newUser.password = undefined;
 
@@ -43,7 +51,6 @@ module.exports.register = catchAsync(async (req, res, next) => {
       message: 'User created successfully!',
       data: {
         user: newUser,
-        token,
       },
     });
   } catch (error) {
@@ -56,15 +63,20 @@ module.exports.register = catchAsync(async (req, res, next) => {
 });
 
 module.exports.login = catchAsync(async (req, res, next) => {
+  console.log('Login attempt with body:', { email: req.body.email });
+
   const { email, password } = req.body;
 
   // Check if user provided email and password
-  if (!email || !password)
+  if (!email || !password) {
+    console.log('Missing email or password');
     return next(new AppError('Please provide email and password!', 400));
+  }
 
   // Check if user exists && password is correct
   const user = await User.findOne({ email }).select('+password +active');
   if (!user) {
+    console.log('User not found:', email);
     return next(new AppError('Incorrect email or password!', 401));
   }
 
@@ -74,14 +86,17 @@ module.exports.login = catchAsync(async (req, res, next) => {
     user.password
   );
   if (!isPasswordCorrect) {
+    console.log('Incorrect password for user:', email);
     return next(new AppError('Incorrect email or password!', 401));
   }
 
   // Check if the user's account is active
-  if (!user.active)
+  if (!user.active) {
+    console.log('Inactive account:', email);
     return next(
       new AppError('Your account is deactivated. Please contact support.', 401)
     );
+  }
 
   // Create JWT token
   const token = createJWTToken(user);
@@ -97,6 +112,9 @@ module.exports.login = catchAsync(async (req, res, next) => {
   // Remove password from output
   user.password = undefined;
 
+  console.log('Login successful for user:', email);
+
+  // Send response
   res.status(200).json({
     status: 'success',
     message: 'Logged in successfully!',
