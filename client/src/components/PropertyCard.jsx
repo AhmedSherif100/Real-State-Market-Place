@@ -18,7 +18,35 @@ const PropertyCard = ({ property, onUpdate, isEditable = false }) => {
     media,
   } = editedProperty;
 
-  const image = `../uploads/${media[0]}`;
+  const image = media.length > 0 ? media[0] : '';
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedProperty(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleNestedInputChange = (category, field, value) => {
+    setEditedProperty(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleSave = () => {
+    onUpdate(_id, editedProperty);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditedProperty(property);
+    setIsEditing(false);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
