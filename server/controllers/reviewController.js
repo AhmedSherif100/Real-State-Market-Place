@@ -23,9 +23,51 @@ exports.getAllReviews = catchAsync(async (req, res) => {
   });
 });
 
+exports.getRandomReviews = catchAsync(async (req, res) => {
+  const limit = parseInt(req.query.limit) || 3;
+  const reviews = await Review.aggregate([
+    { $sample: { size: limit } },
+    {
+      $lookup: {
+        from: 'agents',
+        localField: 'agent',
+        foreignField: '_id',
+        as: 'agentDetails',
+      },
+    },
+    {
+      $unwind: '$agentDetails',
+    },
+    {
+      $project: {
+        _id: 1,
+        reviewerName: 1,
+        rating: 1,
+        reviewText: 1,
+        date: 1,
+        agent: {
+          firstName: '$agentDetails.firstName',
+          lastName: '$agentDetails.lastName',
+        },
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    results: reviews.length,
+    data: {
+      reviews,
+    },
+  });
+});
+
 exports.getReviewById = catchAsync(async (req, res) => {
-  const review = await Review.findById(req.params.id).populate('agent', 'firstName lastName');
-  
+  const review = await Review.findById(req.params.id).populate(
+    'agent',
+    'firstName lastName'
+  );
+
   if (!review) {
     return res.status(404).json({
       status: 'fail',
@@ -76,4 +118,4 @@ exports.deleteReview = catchAsync(async (req, res) => {
     status: 'success',
     data: null,
   });
-}); 
+});
