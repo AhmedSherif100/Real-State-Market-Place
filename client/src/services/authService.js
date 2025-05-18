@@ -17,19 +17,25 @@ export const login = async (email, password) => {
       email: email.trim(),
       password: password,
     });
-    return response;
+    return response.data;
   } catch (error) {
-    throw error;
+    if (error.response) {
+      throw error;
+    }
+    throw {
+      response: {
+        status: 500,
+        data: {
+          message: 'Network error. Please try again.',
+        },
+      },
+    };
   }
 };
 
 export const register = async (userData) => {
-  try {
-    const response = await api.post('/auth/register', userData);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.post('/auth/register', userData);
+  return response.data;
 };
 
 export const logout = async () => {
@@ -43,23 +49,8 @@ export const getCurrentUser = async () => {
     return response.data.data.user;
   } catch (error) {
     if (error.response?.status === 401) {
-      // User is not authenticated
       return null;
     }
     throw error;
   }
 };
-
-// Add error interceptor for handling 401 errors
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      // Only redirect to login if we're not already on the login page
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
-);

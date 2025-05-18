@@ -34,8 +34,8 @@ const userSchema = new Schema(
     profilePicture: { type: String, default: '' },
     role: {
       type: String,
-      enum: ['buyer', 'seller', 'agent', 'admin'],
-      default: 'buyer',
+      enum: ['user', 'agent', 'admin'],
+      default: 'user',
     },
     phoneNumber: { type: String },
     whatsapp: { type: String },
