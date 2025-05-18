@@ -20,7 +20,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        setLoading(true);
         const userData = await getCurrentUser();
         setUser(userData);
         setError(null);
@@ -40,35 +39,31 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      setLoading(true);
       setError(null);
       const response = await loginService(email, password);
       
-      if (response.data && response.data.data && response.data.data.user) {
-        setUser(response.data.data.user);
+      if (response.data && response.data.user) {
+        setUser(response.data.user);
         return response;
       } else {
         throw new Error('Invalid response format from server');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
-      throw err;
-    } finally {
-      setLoading(false);
+      console.log('Login error:', err);
+      const errorMessage = err.response?.data?.message || 'Login failed';
+      setError(errorMessage);
+      throw err; // Re-throw to let the component handle the error
     }
   };
 
   const logout = async () => {
     try {
-      setLoading(true);
       await logoutService();
       setUser(null);
       setError(null);
     } catch (err) {
       setError(err.response?.data?.message || 'Logout failed');
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -84,7 +79,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }; 

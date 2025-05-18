@@ -1,16 +1,33 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
-const authMiddleware = require('../middlewares/auth/authMiddleware');
 const propertyController = require('../controllers/propertyController');
+const authMiddleware = require('../middlewares/auth/authMiddleware');
 
 // All Routes are protected to admin role only
 router.use(authMiddleware.protect, authMiddleware.restrictTo('admin'));
 
-router.get('/properties/', propertyController.getAllProperties);
-router.get('/properties/:id', propertyController.getPropertyById);
-router.post('/properties/', propertyController.createProperty);
-router.patch('/properties/:id', propertyController.updatePropertyById);
-router.delete('/properties/:id', propertyController.deletePropertyById);
+// Property routes
+router
+  .route('/properties')
+  .get(propertyController.getAllProperties)
+  .post(propertyController.createProperty);
+
+router
+  .route('/properties/:id')
+  .get(propertyController.getPropertyById)
+  .patch(propertyController.updatePropertyById)
+  .delete(propertyController.deletePropertyById);
+
+// User management routes
+router.route('/users').get(adminController.getAllUsers);
+
+router.patch('/users/:id/reactivate', adminController.reactivateUser);
+
+router
+  .route('/users/:id')
+  .get(adminController.getUserById)
+  .patch(adminController.updateUserById)
+  .delete(adminController.deactivateUser);
 
 module.exports = router;

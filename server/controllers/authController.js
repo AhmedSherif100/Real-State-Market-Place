@@ -18,6 +18,29 @@ const createJWTToken = (user) => {
   });
 };
 
+const sendJWTToken = (user, statusCode, res) => {
+  const token = createJWTToken(user);
+
+  // Set JWT cookie
+  res.cookie('jwt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: process.env.JWT_EXPIRES_IN * 24 * 60 * 60 * 1000, // Convert days to milliseconds
+    path: '/',
+  });
+
+  // Remove password from output
+  user.password = undefined;
+
+  res.status(statusCode).json({
+    status: 'success',
+    data: {
+      user,
+    },
+  });
+};
+
 module.exports.register = catchAsync(async (req, res, next) => {
   try {
     console.log('Registration request body:', req.body);
@@ -31,28 +54,7 @@ module.exports.register = catchAsync(async (req, res, next) => {
     });
 
     console.log('Created user:', newUser);
-
-    // Create a JWT token
-    const token = createJWTToken(newUser);
-
-    // Set JWT cookie
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: process.env.JWT_EXPIRES_IN * 24 * 60 * 60 * 1000, // Convert days to milliseconds
-    });
-
-    // Remove password from output
-    newUser.password = undefined;
-
-    res.status(201).json({
-      status: 'success',
-      message: 'User created successfully!',
-      data: {
-        user: newUser,
-      },
-    });
+    sendJWTToken(newUser, 201, res);
   } catch (error) {
     console.error('Registration error:', error);
     if (error.name === 'ValidationError') {
@@ -98,33 +100,23 @@ module.exports.login = catchAsync(async (req, res, next) => {
     );
   }
 
-  // Create JWT token
-  const token = createJWTToken(user);
-
-  // Set JWT cookie
-  res.cookie('jwt', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: process.env.JWT_EXPIRES_IN * 24 * 60 * 60 * 1000, // Convert days to milliseconds
-  });
-
-  // Remove password from output
-  user.password = undefined;
-
   console.log('Login successful for user:', email);
-
-  // Send response
-  res.status(200).json({
-    status: 'success',
-    message: 'Logged in successfully!',
-    data: {
-      user,
-    },
-  });
+  sendJWTToken(user, 200, res);
 });
 
 module.exports.logout = catchAsync(async (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    httpOnly: true,
+    expires: new Date(Date.now() + 10 * 1000),
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    domain:
+      process.env.NODE_ENV === 'production'
+        ? process.env.COOKIE_DOMAIN
+        : 'localhost',
+  });
+
   res.status(200).json({
     status: 'success',
     message: 'Logged out successfully!',

@@ -4,8 +4,41 @@ import Navbar from '../components/Navbar';
 import FeaturedProperties from '../components/FeaturedProperties';
 import { FaStar, FaUser } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { getAllProperties } from '../services/propertyService';
+import { getRandomReviews } from '../services/reviewService';
 
 const HomePage = () => {
+  const { isAuthenticated } = useAuth();
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch properties
+        const propertiesResponse = await getAllProperties();
+        setProperties(propertiesResponse.data.properties);
+        
+        // Fetch reviews
+        const reviewsResponse = await getRandomReviews(3);
+        setReviews(reviewsResponse.data.reviews);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err.response?.data?.message || 'Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const customerSuccessData = [
     { label: 'Properties Sold', value: '200+' },
     { label: 'Happy Clients', value: '10K+' },
@@ -23,49 +56,6 @@ const HomePage = () => {
     },
     { title: 'Smart Financials', description: 'Explore loan options.' },
   ];
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [reviews, setReviews] = useState([]);
-
-  useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/properties')
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Network response was not ok: ${res.statusText}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setProperties(data.data.properties);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch properties:', err);
-        setProperties([]);
-        setLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    fetchRandomReviews();
-  }, []);
-
-  const fetchRandomReviews = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/reviews');
-      const data = await response.json();
-      
-      if (data.status === 'success') {
-        // Get 3 random reviews
-        const shuffled = [...data.data.reviews].sort(() => 0.5 - Math.random());
-        setReviews(shuffled.slice(0, 3));
-      }
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const faqs = [
     {
@@ -81,6 +71,23 @@ const HomePage = () => {
       answer: 'Use the "Find an Agent" feature.'
     }
   ];
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#121212] text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-500 mb-4">Error</h2>
+          <p className="text-gray-400">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-6 py-2 bg-[#703BF7] rounded-lg hover:bg-[#5f2cc6] transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#121212] text-[#fff] min-h-screen">
@@ -222,12 +229,21 @@ const HomePage = () => {
             ) : (
               <div className="col-span-3 text-center text-gray-400">
                 <p className="text-xl">No reviews yet. Be the first to write one!</p>
-                <Link
-                  to="/write-review"
-                  className="inline-block mt-4 bg-gradient-to-r from-[#703BF7] to-[#5f2cc6] text-white px-6 py-2 rounded-lg hover:from-[#5f2cc6] hover:to-[#703BF7] transition-all duration-300"
-                >
-                  Write a Review
-                </Link>
+                {isAuthenticated ? (
+                  <Link
+                    to="/write-review"
+                    className="inline-block mt-4 bg-gradient-to-r from-[#703BF7] to-[#5f2cc6] text-white px-6 py-2 rounded-lg hover:from-[#5f2cc6] hover:to-[#703BF7] transition-all duration-300"
+                  >
+                    Write a Review
+                  </Link>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="inline-block mt-4 bg-gradient-to-r from-[#703BF7] to-[#5f2cc6] text-white px-6 py-2 rounded-lg hover:from-[#5f2cc6] hover:to-[#703BF7] transition-all duration-300"
+                  >
+                    Login to Write a Review
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -249,27 +265,17 @@ const HomePage = () => {
         <h2 className="text-3xl font-bold text-center mb-10">
           Frequently Asked Questions
         </h2>
-        <div className="space-y-4 max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto space-y-6">
           {faqs.map((faq, index) => (
-            <div key={index} className="bg-[#1a1a1a] p-4 rounded-lg">
-              <h3 className="font-semibold">{faq.question}</h3>
-              <p className="text-gray-400 mt-2">{faq.answer}</p>
+            <div
+              key={index}
+              className="bg-[#1a1a1a] p-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
+            >
+              <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
+              <p className="text-gray-400">{faq.answer}</p>
             </div>
           ))}
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="px-6 md:px-16 py-20 text-center bg-[#1a1a1a]">
-        <h2 className="text-3xl font-bold mb-6">
-          Ready to Find Your Dream Home?
-        </h2>
-        <p className="text-gray-400 mb-6">
-          Join thousands of happy clients today!
-        </p>
-        <button className="bg-[#703BF7] px-6 py-3 rounded-lg hover:bg-[#5f2cc6]">
-          Get Started
-        </button>
       </section>
     </div>
   );
