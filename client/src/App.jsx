@@ -21,6 +21,7 @@ import CreateAgent from './pages/CreateAgent';
 import ManageAgents from './pages/ManageAgents';
 import Profile from './pages/Profile';
 import Reviews from './pages/Reviews';
+import AdminReviews from './pages/admin/Reviews';
 import ReviewForm from './components/ReviewForm';
 import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import NotFound from './pages/NotFound';
@@ -34,7 +35,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/rent" element={<Rent />} />
         <Route path="/buy" element={<Buy />} />
         <Route path="/sell" element={<Sell />} />
@@ -53,6 +54,7 @@ const App = () => {
             <Route index element={<Dashboard />} />
             <Route path="users" element={<Users />} />
             <Route path="properties" element={<Properties />} />
+            <Route path="reviews" element={<AdminReviews />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Route>

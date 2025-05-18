@@ -93,7 +93,7 @@ function Users() {
     try {
       const response = await updateUser(editingUser._id, formData);
       setUsers(users.map(user => 
-        user._id === editingUser._id ? response.data.data.user : user
+        user._id === editingUser._id ? response.data.user : user
       ));
       setEditingUser(null);
     } catch (error) {

@@ -1,6 +1,6 @@
 const Review = require('../models/reviewModel');
 const catchAsync = require('../utils/catchAsync');
-const appError = require('../utils/appError');
+const AppError = require('../utils/appError');
 
 exports.createReview = catchAsync(async (req, res) => {
   const newReview = await Review.create(req.body);
@@ -13,7 +13,14 @@ exports.createReview = catchAsync(async (req, res) => {
 });
 
 exports.getAllReviews = catchAsync(async (req, res) => {
-  const reviews = await Review.find().populate('agent', 'firstName lastName');
+  const reviews = await Review.find()
+    .populate({
+      path: 'agent',
+      select: 'firstName lastName',
+      options: { lean: true },
+    })
+    .sort({ createdAt: -1 }); // Sort by newest first
+
   res.status(200).json({
     status: 'success',
     results: reviews.length,
@@ -62,17 +69,14 @@ exports.getRandomReviews = catchAsync(async (req, res) => {
   });
 });
 
-exports.getReviewById = catchAsync(async (req, res) => {
+exports.getReviewById = catchAsync(async (req, res, next) => {
   const review = await Review.findById(req.params.id).populate(
     'agent',
     'firstName lastName'
   );
 
   if (!review) {
-    return res.status(404).json({
-      status: 'fail',
-      message: `No review found with ID: ${req.params.id}`,
-    });
+    return next(new AppError(`No review found with ID: ${req.params.id}`, 404));
   }
 
   res.status(200).json({
@@ -83,17 +87,35 @@ exports.getReviewById = catchAsync(async (req, res) => {
   });
 });
 
-exports.updateReview = catchAsync(async (req, res) => {
-  const review = await Review.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  }).populate('agent', 'firstName lastName');
+exports.updateReview = catchAsync(async (req, res, next) => {
+  // Validate required fields for admin update
+  const { rating, reviewText } = req.body;
+
+  if (!rating || !reviewText) {
+    return next(
+      new AppError(
+        'Please provide all required fields: rating and reviewText',
+        400
+      )
+    );
+  }
+
+  // Validate rating range
+  if (rating < 1 || rating > 5) {
+    return next(new AppError('Rating must be between 1 and 5', 400));
+  }
+
+  const review = await Review.findByIdAndUpdate(
+    req.params.id,
+    { rating, reviewText, updatedAt: Date.now() },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).populate('agent', 'firstName lastName');
 
   if (!review) {
-    return res.status(404).json({
-      status: 'fail',
-      message: `No review found with ID: ${req.params.id}`,
-    });
+    return next(new AppError(`No review found with ID: ${req.params.id}`, 404));
   }
 
   res.status(200).json({
@@ -104,15 +126,14 @@ exports.updateReview = catchAsync(async (req, res) => {
   });
 });
 
-exports.deleteReview = catchAsync(async (req, res) => {
-  const review = await Review.findByIdAndDelete(req.params.id);
+exports.deleteReview = catchAsync(async (req, res, next) => {
+  const review = await Review.findById(req.params.id);
 
   if (!review) {
-    return res.status(404).json({
-      status: 'fail',
-      message: `No review found with ID: ${req.params.id}`,
-    });
+    return next(new AppError(`No review found with ID: ${req.params.id}`, 404));
   }
+
+  await Review.findByIdAndDelete(req.params.id);
 
   res.status(204).json({
     status: 'success',

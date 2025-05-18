@@ -31,7 +31,7 @@ const PropertyDetail = () => {
   const [properties, setProperties] = useState([]);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/properties')
+    fetch('http://localhost:8000/api/properties')
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Network response was not ok: ${res.statusText}`);

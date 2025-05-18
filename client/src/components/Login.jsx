@@ -31,15 +31,8 @@ function Login() {
       await login(formData.email.trim(), formData.password);
       navigate('/', { replace: true });
     } catch (err) {
-      if (err.response?.status === 401) {
-        setError('Invalid email or password');
-      } else if (err.response?.status === 404) {
-        setError('User not found');
-      } else if (err.response?.status === 400) {
-        setError(err.response.data.message || 'Invalid credentials');
-      } else {
-        setError('An error occurred during login. Please try again.');
-      }
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'An error occurred during login. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -52,16 +45,14 @@ function Login() {
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-          style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2073&q=80')"
-          }}
+
         />
         
         {/* Content */}
         <section className="relative flex items-center justify-center py-24 px-6 md:px-16">
           <div className="w-full max-w-md bg-[#1a1a1a] rounded-xl p-8 shadow-lg transform transition-all duration-500 hover:shadow-2xl hover:shadow-[#703BF7]/20">
             <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-[#703BF7] to-[#fff]">
-              Login to Your Account
+              Login
             </h2>
 
             {error && (

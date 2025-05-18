@@ -65,3 +65,27 @@ export const deleteProperty = async (propertyId) => {
   const response = await axios.delete(`${API_URL}/properties/${propertyId}`);
   return response.data;
 };
+
+// Review Management
+export const getAllReviews = async () => {
+  const response = await axios.get(`${API_URL}/reviews`);
+  return response.data;
+};
+
+export const getReviewById = async (reviewId) => {
+  const response = await axios.get(`${API_URL}/reviews/${reviewId}`);
+  return response.data;
+};
+
+export const updateReview = async (reviewId, reviewData) => {
+  const response = await axios.patch(
+    `${API_URL}/reviews/${reviewId}`,
+    reviewData
+  );
+  return response.data;
+};
+
+export const deleteReview = async (reviewId) => {
+  const response = await axios.delete(`${API_URL}/reviews/${reviewId}`);
+  return response.data;
+};

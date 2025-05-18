@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
+import axios from 'axios';
 
 const formVariants = {
   initial: { opacity: 0, x: 100, scale: 0.95 },
@@ -16,6 +17,7 @@ const formVariants = {
 
 export default function BecomeAgent() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [step, setStep] = useState(1); // 1 for login, 2 for agent form
   const [loginData, setLoginData] = useState({
     email: '',
@@ -60,52 +62,27 @@ export default function BecomeAgent() {
     setMessage('');
 
     try {
-      // First verify login
-      const response = await axios.post(
-        'http://localhost:8000/api/auth/login',
-        loginData
-      );
-
-      if (response.status === 200) {
-        const userRole = response.data.data.user?.role;
+      // Use the login function from auth context
+      const response = await login(loginData.email.trim(), loginData.password);
+      
+      if (response.data.user.role === 'agent') {
+        setMessage('You are already an agent!');
+        setTimeout(() => {
+          navigate('/agent');
+        }, 2000);
+      } else {
+        // Pre-fill agent data with user info
+        setAgentData(prev => ({
+          ...prev,
+          firstName: response.data.user.firstName || '',
+          lastName: response.data.user.lastName || '',
+          email: loginData.email,
+          password: loginData.password,
+          contactEmail: loginData.email // Pre-fill contact email with login email
+        }));
         
-        if (userRole === 'agent') {
-          setMessage('You are already an agent!');
-          setTimeout(() => {
-            navigate('/agent');
-          }, 2000);
-        } else {
-          // Store the token for the agent creation request
-          const token = response.data.token;
-          localStorage.setItem('token', response.data.token);
-
-          // Fetch user data using the email
-          const userResponse = await axios.get(
-            `http://localhost:8000/api/users/email/${loginData.email}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            }
-          );
-
-          if (userResponse.status === 200) {
-            const userData = userResponse.data.data.user;
-            
-            // Pre-fill agent data with user info
-            setAgentData(prev => ({
-              ...prev,
-              firstName: userData.name.first || '',
-              lastName: userData.name.last || '',
-              email: loginData.email,
-              password: loginData.password,
-              contactEmail: loginData.email // Pre-fill contact email with login email
-            }));
-            
-            setStep(2);
-            setMessage('');
-          }
-        }
+        setStep(2);
+        setMessage('');
       }
     } catch (error) {
       setMessage(error.response?.data?.message || 'Invalid credentials');
@@ -120,21 +97,13 @@ export default function BecomeAgent() {
     setMessage('');
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setMessage('Please login first');
-        setStep(1);
-        setLoading(false);
-        return;
-      }
-
       // Create the agent data with all required fields
       const agentPayload = {
         firstName: agentData.firstName,
         lastName: agentData.lastName,
-        email: agentData.email, // Use the email from login
-        password: agentData.password, // Use the password from login
-        user: agentData.email, // Use the email as user field
+        email: agentData.email,
+        password: agentData.password,
+        user: agentData.email,
         contactEmail: agentData.contactEmail || agentData.email,
         phoneNumber: agentData.phoneNumber,
         yearsOfExperience: agentData.yearsOfExperience,
@@ -147,9 +116,7 @@ export default function BecomeAgent() {
         'http://localhost:8000/api/agents',
         agentPayload,
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          withCredentials: true // Important for cookie-based auth
         }
       );
 

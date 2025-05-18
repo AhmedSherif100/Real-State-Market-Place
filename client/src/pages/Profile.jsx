@@ -381,7 +381,7 @@ const Profile = () => {
                 You haven't listed any properties yet.
               </p>
               <button
-                onClick={() => navigate('/create-property')}
+                onClick={() => navigate('/sell')}
                 className="mt-4 bg-gradient-to-r from-[#703BF7] to-purple-500 text-white px-6 py-2 rounded-full hover:from-purple-600 hover:to-purple-400 transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
                 List a Property

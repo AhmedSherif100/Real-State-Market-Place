@@ -48,34 +48,6 @@ const PropertyCard = ({ property, onUpdate, isEditable = false }) => {
     setIsEditing(false);
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditedProperty(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleNestedInputChange = (category, field, value) => {
-    setEditedProperty(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [field]: value
-      }
-    }));
-  };
-
-  const handleSave = () => {
-    onUpdate(_id, editedProperty);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditedProperty(property);
-    setIsEditing(false);
-  };
-
   return (
     <div className="max-w-sm rounded-2xl overflow-hidden shadow-lg bg-[#1a1a1a] hover:shadow-2xl transition-shadow duration-300 border border-[#252525]">
       <img className="w-full h-48 object-cover" src={image} alt={title} />
