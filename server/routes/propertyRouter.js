@@ -3,11 +3,11 @@ const router = express.Router();
 const propertyController = require('../controllers/propertyController.js');
 const authMiddleware = require('../middlewares/auth/authMiddleware');
 
-// RESTful Routes (HTTP  + Path)
+// Public routes
 router.get('/', propertyController.getAllProperties); // GET              /api/properties
 router.get('/:id', propertyController.getPropertyById); // GET            /api/properties/:id
 
-// Protected Routes [User must be logged in]
+// Protected routes
 router.use(authMiddleware.protect);
 router.post('/', propertyController.createProperty);
 router.patch('/:id', propertyController.updatePropertyById); // PATCH     /api/properties/:id

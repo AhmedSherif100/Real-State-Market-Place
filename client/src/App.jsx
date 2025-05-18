@@ -1,54 +1,67 @@
-import { Home } from './pages';
-import { Route, Routes } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { AuthProvider } from './context/AuthContext';
+import AdminLayout from './components/admin/Layout';
+import Dashboard from './pages/admin/Dashboard';
+import Users from './pages/admin/Users';
+import Properties from './pages/admin/Properties';
+import Settings from './pages/admin/Settings';
+import Home from './pages/Home';
 import Register from './components/Register';
 import Login from './components/Login';
-
 import ForgetPassword from './components/ForgetPassword';
 import ResetPassword from './components/ResetPassword';
-import Dashboard from './pages/Dashboard';
-import ManageProperties from './pages/ManageProperties';
-import ManageUsers from './pages/ManageUsers';
-import Properties from './pages/Properties';
 import Rent from './pages/Rent';
 import Buy from './pages/Buy';
 import Sell from './pages/Sell';
-
-
 import PropertyDetail from './pages/PropertyDetail';
-import Agnet from './pages/Agent';
-import BecomeAgent from './pages/BecomeAgent';
 import Agent from './pages/Agent';
+import BecomeAgent from './pages/BecomeAgent';
 import CreateAgent from './pages/CreateAgent';
-
-
-
-
+import ManageAgents from './pages/ManageAgents';
+import Profile from './pages/Profile';
+import Reviews from './pages/Reviews';
+import AdminReviews from './pages/admin/Reviews';
+import ReviewForm from './components/ReviewForm';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
+import NotFound from './pages/NotFound';
 
 const App = () => {
   return (
-    <div className="relative min-h-screen bg-base-100 transition-colors duration-300">
       <Routes>
-        <Route path="/" element={<Home />} /> // same as /
+        {/* Public routes */}
+        <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/register" element={<Register/>} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/manage-properties" element={<ManageProperties />} />
-        <Route path="/manage-users" element={<ManageUsers />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/rent" element={<Rent />} />
         <Route path="/buy" element={<Buy />} />
         <Route path="/sell" element={<Sell />} />
-
-        <Route path="/agent" element={<Agent/>} />
-        <Route path="/bagent" element={<BecomeAgent />} />
+        <Route path="/agent" element={<Agent />} />
+        <Route path="/become-agent" element={<BecomeAgent />} />
         <Route path="/create-agent" element={<CreateAgent />} />
-
+        <Route path="/manage-agents" element={<ManageAgents />} />
         <Route path="/property/:id" element={<PropertyDetail />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/reviews" element={<Reviews />} />
+        <Route path="/write-review" element={<ReviewForm />} />
 
+        {/* Protected admin routes */}
+        <Route element={<ProtectedAdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="properties" element={<Properties />} />
+            <Route path="reviews" element={<AdminReviews />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Route>
+
+        {/* 404 route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
-    </div>
   );
 };
 
