@@ -17,5 +17,6 @@ router.patch('/reset-password/:token', authController.resetPassword);
 // Protected Routes
 router.use(authMiddleware.protect);
 router.get('/me', authController.getMe);
+router.patch('/updateMe', authController.updateMe);
 
 module.exports = router;
