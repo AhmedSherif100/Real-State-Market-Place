@@ -48,7 +48,7 @@ const Profile = () => {
 
         if (propertiesResponse.data.status === 'success') {
           const userProps = propertiesResponse.data.data.properties.filter(
-            prop => prop.user === user._id
+            (prop) => prop.user === user._id
           );
           setUserProperties(userProps);
         }
@@ -60,9 +60,8 @@ const Profile = () => {
           email: user.email || '',
           phoneNumber: user.phoneNumber || '',
           whatsapp: user.whatsapp || '',
-          contactEmail: user.contactEmail || ''
+          contactEmail: user.contactEmail || '',
         });
-
       } catch (err) {
         console.error('Error:', err);
         if (err.response?.data?.message) {
@@ -83,7 +82,7 @@ const Profile = () => {
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -104,7 +103,7 @@ const Profile = () => {
           email: updatedUser.email || '',
           phoneNumber: updatedUser.phoneNumber || '',
           whatsapp: updatedUser.whatsapp || '',
-          contactEmail: updatedUser.contactEmail || ''
+          contactEmail: updatedUser.contactEmail || '',
         });
         setEditMode(false);
         // Refresh the page to update the auth context
@@ -131,11 +130,14 @@ const Profile = () => {
     setError('');
 
     try {
-      const response = await api.patch(`/properties/${propertyId}`, updatedData);
+      const response = await api.patch(
+        `/properties/${propertyId}`,
+        updatedData
+      );
 
       if (response.data.status === 'success') {
-        setUserProperties(prevProps =>
-          prevProps.map(prop =>
+        setUserProperties((prevProps) =>
+          prevProps.map((prop) =>
             prop._id === propertyId ? response.data.data.property : prop
           )
         );
@@ -207,7 +209,7 @@ const Profile = () => {
           </h1>
           <div className="w-24 h-1 bg-gradient-to-r from-[#703BF7] to-purple-500 mx-auto mt-4 rounded-full"></div>
         </div>
-        
+
         {/* User Information Section */}
         <div className="bg-[#1a1a1a] rounded-2xl p-8 mb-8 shadow-lg border border-[#252525] hover:shadow-2xl transition-shadow duration-300 max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-6">
@@ -226,7 +228,9 @@ const Profile = () => {
             <form onSubmit={handleUpdateUser} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">First Name</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">
+                    First Name
+                  </label>
                   <input
                     type="text"
                     name="firstName"
@@ -236,7 +240,9 @@ const Profile = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">Last Name</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">
+                    Last Name
+                  </label>
                   <input
                     type="text"
                     name="lastName"
@@ -246,7 +252,9 @@ const Profile = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">Email</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">
+                    Email
+                  </label>
                   <input
                     type="email"
                     name="email"
@@ -256,7 +264,9 @@ const Profile = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">Phone Number</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">
+                    Phone Number
+                  </label>
                   <input
                     type="tel"
                     name="phoneNumber"
@@ -266,7 +276,9 @@ const Profile = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">WhatsApp</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">
+                    WhatsApp
+                  </label>
                   <input
                     type="tel"
                     name="whatsapp"
@@ -276,7 +288,9 @@ const Profile = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">Contact Email</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-400">
+                    Contact Email
+                  </label>
                   <input
                     type="email"
                     name="contactEmail"
@@ -302,30 +316,54 @@ const Profile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="bg-[#252525] p-4 rounded-xl">
-                  <span className="text-gray-400 block text-sm mb-1">First Name</span>
-                  <p className="text-lg text-white font-medium">{user?.firstName}</p>
+                  <span className="text-gray-400 block text-sm mb-1">
+                    First Name
+                  </span>
+                  <p className="text-lg text-white font-medium">
+                    {user?.firstName}
+                  </p>
                 </div>
                 <div className="bg-[#252525] p-4 rounded-xl">
-                  <span className="text-gray-400 block text-sm mb-1">Last Name</span>
-                  <p className="text-lg text-white font-medium">{user?.lastName}</p>
+                  <span className="text-gray-400 block text-sm mb-1">
+                    Last Name
+                  </span>
+                  <p className="text-lg text-white font-medium">
+                    {user?.lastName}
+                  </p>
                 </div>
                 <div className="bg-[#252525] p-4 rounded-xl">
-                  <span className="text-gray-400 block text-sm mb-1">Email</span>
-                  <p className="text-lg text-white font-medium">{user?.email}</p>
+                  <span className="text-gray-400 block text-sm mb-1">
+                    Email
+                  </span>
+                  <p className="text-lg text-white font-medium">
+                    {user?.email}
+                  </p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="bg-[#252525] p-4 rounded-xl">
-                  <span className="text-gray-400 block text-sm mb-1">Phone Number</span>
-                  <p className="text-lg text-white font-medium">{user?.phoneNumber || 'Not provided'}</p>
+                  <span className="text-gray-400 block text-sm mb-1">
+                    Phone Number
+                  </span>
+                  <p className="text-lg text-white font-medium">
+                    {user?.phoneNumber || 'Not provided'}
+                  </p>
                 </div>
                 <div className="bg-[#252525] p-4 rounded-xl">
-                  <span className="text-gray-400 block text-sm mb-1">WhatsApp</span>
-                  <p className="text-lg text-white font-medium">{user?.whatsapp || 'Not provided'}</p>
+                  <span className="text-gray-400 block text-sm mb-1">
+                    WhatsApp
+                  </span>
+                  <p className="text-lg text-white font-medium">
+                    {user?.whatsapp || 'Not provided'}
+                  </p>
                 </div>
                 <div className="bg-[#252525] p-4 rounded-xl">
-                  <span className="text-gray-400 block text-sm mb-1">Contact Email</span>
-                  <p className="text-lg text-white font-medium">{user?.contactEmail || 'Not provided'}</p>
+                  <span className="text-gray-400 block text-sm mb-1">
+                    Contact Email
+                  </span>
+                  <p className="text-lg text-white font-medium">
+                    {user?.contactEmail || 'Not provided'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -339,7 +377,9 @@ const Profile = () => {
           </h2>
           {userProperties.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-400 text-lg">You haven't listed any properties yet.</p>
+              <p className="text-gray-400 text-lg">
+                You haven't listed any properties yet.
+              </p>
               <button
                 onClick={() => navigate('/create-property')}
                 className="mt-4 bg-gradient-to-r from-[#703BF7] to-purple-500 text-white px-6 py-2 rounded-full hover:from-purple-600 hover:to-purple-400 transition-all duration-300 transform hover:scale-105 shadow-lg"
@@ -349,7 +389,7 @@ const Profile = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {userProperties.map(property => (
+              {userProperties.map((property) => (
                 <PropertyCard
                   key={property._id}
                   property={property}
@@ -365,4 +405,4 @@ const Profile = () => {
   );
 };
 
-export default Profile; 
+export default Profile;

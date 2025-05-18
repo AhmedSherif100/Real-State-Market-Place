@@ -256,3 +256,49 @@ module.exports.getMe = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+module.exports.updateMe = catchAsync(async (req, res, next) => {
+  if (req.body.password || req.body.role || req.body.authType) {
+    return next(
+      new AppError('Cannot update password, role, or authType here', 400)
+    );
+  }
+
+  // 2. Filter allowed fields to update
+  const allowedFields = [
+    'firstName',
+    'lastName',
+    'email',
+    'profilePicture',
+    'phoneNumber',
+    'whatsapp',
+    'contactEmail',
+  ];
+  const updates = {};
+  allowedFields.forEach((field) => {
+    if (req.body[field]) updates[field] = req.body[field];
+  });
+
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  if (!updates.email) {
+    return next(new AppError('Invalid email address', 400));
+  }
+
+  Object.keys(updates).forEach((key) => {
+    user[key] = updates[key];
+  });
+
+  const updatedUser = await user.save({ validateBeforeSave: true });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser,
+    },
+  });
+});
