@@ -177,7 +177,7 @@ const PropertyDetail = () => {
         <div className="mb-12 space-y-4">
           <div className="h-96 rounded-2xl overflow-hidden shadow-xl">
             <img
-              src={`../uploads/${media[activeImage]}`}
+              src={media[activeImage] || media[0]}
               alt={`Property view ${activeImage + 1}`}
               className="w-full h-full object-cover"
             />
@@ -197,7 +197,7 @@ const PropertyDetail = () => {
                   }`}
                 >
                   <img
-                    src={`../uploads/${image}`}
+                    src={media[index] || media[0]}
                     alt={`Thumbnail ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
