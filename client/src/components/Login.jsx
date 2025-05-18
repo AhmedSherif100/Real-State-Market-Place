@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -27,24 +28,9 @@ function Login() {
     }
 
     try {
-      // Send plain password to backend for hashing and comparison
-      const response = await axios.post('http://localhost:8000/api/auth/login', {
-        email: formData.email.trim(),
-        password: formData.password // Send plain password, backend will handle hashing
-      });
-
-      if (response.data?.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-
-      if (response.data?.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
-
-      console.log('Login successful:', response.data);
-      navigate('/');
+      await login(formData.email.trim(), formData.password);
+      navigate('/', { replace: true });
     } catch (err) {
-      console.error('Login failed:', err);
       if (err.response?.status === 401) {
         setError('Invalid email or password');
       } else if (err.response?.status === 404) {
